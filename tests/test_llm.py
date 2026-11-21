@@ -114,3 +114,124 @@ def test_mock_llm_structured_generation():
     # Health check
     health = client.health_check()
     assert health["status"] == "healthy"
+
+
+def test_gemini_client_unconfigured(monkeypatch):
+    import pytest
+
+    from core.llm.gemini_client import GeminiClient
+
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    client = GeminiClient(api_key="", enable_cache=False)
+    assert client.health_check()["status"] == "unconfigured"
+    with pytest.raises(RuntimeError, match="GEMINI_API_KEY"):
+        client.generate_text("test")
+    with pytest.raises(RuntimeError, match="GEMINI_API_KEY"):
+        client.generate_structured("test", DummySchema)
+
+
+def test_gemini_client_mock_generation():
+    from unittest.mock import MagicMock
+
+    from core.llm.gemini_client import GeminiClient
+
+    client = GeminiClient(api_key="mock_key", enable_cache=False)
+    mock_genai = MagicMock()
+    client.client = mock_genai
+
+    # Text generation
+    mock_genai.models.generate_content.return_value = MagicMock(text="Generated text response")
+    res = client.generate_text("Prompt")
+    assert res == "Generated text response"
+
+    # Structured generation
+    mock_genai.models.generate_content.return_value = MagicMock(text='{"summary": "Test Summary", "score": 0.88}')
+    res_struct = client.generate_structured("Prompt", DummySchema)
+    assert isinstance(res_struct, DummySchema)
+    assert res_struct.summary == "Test Summary"
+    assert res_struct.score == 0.88
+
+    # Health check
+    health = client.health_check()
+    assert health["status"] == "healthy"
+
+
+def test_ollama_client_mock():
+    from unittest.mock import MagicMock, patch
+
+    import pytest
+    import requests
+
+    from core.llm.ollama_client import OllamaClient
+
+    client = OllamaClient(base_url="http://localhost:11434", model_name="llama3.1:8b", enable_cache=False)
+
+    # Health check healthy
+    with patch("requests.get") as mock_get:
+        mock_get.return_value = MagicMock(status_code=200, json=lambda: {"models": [{"name": "llama3.1:8b"}]})
+        h = client.health_check()
+        assert h["status"] == "healthy"
+
+    # Health check offline
+    with patch("requests.get", side_effect=requests.exceptions.ConnectionError("Offline")):
+        h = client.health_check()
+        assert h["status"] == "offline"
+        assert "not running" in h["message"]
+
+    # Text generation
+    with patch("requests.post") as mock_post:
+        mock_resp = MagicMock(status_code=200, json=lambda: {"response": "Ollama answer"})
+        mock_resp.raise_for_status = MagicMock()
+        mock_post.return_value = mock_resp
+        text = client.generate_text("Test prompt")
+        assert text == "Ollama answer"
+
+    # Structured generation
+    with patch("requests.post") as mock_post:
+        mock_resp = MagicMock(status_code=200, json=lambda: {"response": '{"summary": "Ollama struct", "score": 0.9}'})
+        mock_resp.raise_for_status = MagicMock()
+        mock_post.return_value = mock_resp
+        struct = client.generate_structured("Test prompt", DummySchema)
+        assert struct.summary == "Ollama struct"
+
+    # Connection error during generation
+    with patch("requests.post", side_effect=requests.exceptions.ConnectionError("Ollama offline")):
+        with pytest.raises(RuntimeError, match="Cannot connect to Ollama"):
+            client.generate_text("Test prompt")
+
+
+def test_openai_compat_client_mock():
+    from unittest.mock import MagicMock
+
+    from core.llm.openai_compat_client import OpenAICompatClient
+
+    # Unconfigured
+    client_unconf = OpenAICompatClient(api_key="", enable_cache=False)
+    assert client_unconf.health_check()["status"] == "unconfigured"
+
+    # Configured with mock
+    client = OpenAICompatClient(api_key="mock_key", enable_cache=False)
+    mock_openai = MagicMock()
+    client.client = mock_openai
+
+    # Text generation
+    mock_choice = MagicMock()
+    mock_choice.message.content = "OpenAI response text"
+    mock_openai.chat.completions.create.return_value = MagicMock(choices=[mock_choice])
+    assert client.generate_text("Prompt") == "OpenAI response text"
+
+    # Structured generation
+    mock_choice_struct = MagicMock()
+    mock_choice_struct.message.parsed = DummySchema(summary="OpenAI struct", score=0.99)
+    mock_openai.beta.chat.completions.parse.return_value = MagicMock(choices=[mock_choice_struct])
+    parsed = client.generate_structured("Prompt", DummySchema)
+    assert parsed.summary == "OpenAI struct"
+
+    # Health check healthy
+    mock_openai.models.list.return_value = ["gpt-4o-mini"]
+    assert client.health_check()["status"] == "healthy"
+
+    # Health check error
+    mock_openai.models.list.side_effect = Exception("Unauthorized")
+    assert client.health_check()["status"] == "error"
+

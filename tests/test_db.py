@@ -133,3 +133,55 @@ def test_llm_cache(temp_db):
     temp_db.cache_llm_response(prompt_hash, response_text, model_name)
     cached = temp_db.get_cached_llm_response(prompt_hash)
     assert cached == response_text
+
+
+def test_schema_version_and_migrations(temp_db):
+    """Tests schema_version table tracking and automated migration runner."""
+    # 1. Fresh DB should have schema_version 1
+    assert temp_db.get_schema_version() >= 1
+
+    # 2. Test legacy migration path
+    cid = temp_db.create_collection("Migration Test")
+    pid = temp_db.insert_paper(
+        collection_id=cid,
+        file_hash="hash_mig_1",
+        filename="mig_paper.pdf",
+        file_path="/tmp/mig.pdf",
+        title="Migration Paper",
+        n_pages=5,
+    )
+
+    # Insert legacy formatted table record (with 'header' and missing 'row_count')
+    import json
+    legacy_json = json.dumps({
+        "page_number": 2,
+        "table_index": 1,
+        "header": ["ColA", "ColB"],
+        "rows": [["1", "2"], ["3", "4"]],
+    })
+    temp_db.insert_results_table(
+        paper_id=pid,
+        page_number=2,
+        table_index=1,
+        table_json=legacy_json,
+    )
+
+    # Reset schema version to 0 to simulate pre-migration database
+    with temp_db.get_connection() as conn:
+        conn.execute("DELETE FROM schema_version")
+
+    # Re-run migration
+    with temp_db.get_connection() as conn:
+        temp_db._run_migrations(conn)
+
+    # Verify migration applied
+    assert temp_db.get_schema_version() == 1
+    tables = temp_db.get_results_tables(pid)
+    assert len(tables) == 1
+    migrated_data = json.loads(tables[0]["table_json"])
+    assert migrated_data["row_count"] == 2
+    assert migrated_data["col_count"] == 2
+    assert migrated_data["headers"] == ["ColA", "ColB"]
+    assert "header" not in migrated_data
+    assert "page" not in migrated_data
+

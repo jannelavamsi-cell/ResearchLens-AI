@@ -17,6 +17,9 @@ from core.schemas import ExtractedField, PageSchema
 logger = get_logger("db_manager")
 
 
+CURRENT_SCHEMA_VERSION = 1
+
+
 class DBManager:
     """Manages SQLite connections, schema initialization, and transactional operations."""
 
@@ -42,8 +45,58 @@ class DBManager:
         finally:
             conn.close()
 
+    def _run_migrations(self, conn: sqlite3.Connection) -> None:
+        """Executes versioned database schema migrations sequentially."""
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS schema_version (
+                version INTEGER PRIMARY KEY,
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                description TEXT NOT NULL
+            );
+            """
+        )
+        cur = conn.execute("SELECT COALESCE(MAX(version), 0) FROM schema_version")
+        current_v = cur.fetchone()[0]
+
+        if current_v < 1:
+            logger.info("Applying Migration 1: Canonical table schema normalization")
+            cursor = conn.execute(
+                "SELECT id, paper_id, page_number, table_index, table_json FROM results_tables"
+            )
+            rows = cursor.fetchall()
+            for r in rows:
+                rid, pid, page_num, t_idx, raw_json = r[0], r[1], r[2], r[3], r[4]
+                try:
+                    from modules.results_tables import normalize_table_dict
+
+                    data = json.loads(raw_json)
+                    if isinstance(data, dict):
+                        data["paper_id"] = pid
+                        data["page_number"] = page_num
+                        data["table_index"] = t_idx
+                        norm = normalize_table_dict(data)
+                        conn.execute(
+                            "UPDATE results_tables SET table_json = ? WHERE id = ?",
+                            (json.dumps(norm), rid),
+                        )
+                except Exception as m_err:
+                    logger.warning(f"Migration 1 skipped corrupted table row {rid}: {m_err}")
+
+            conn.execute(
+                "INSERT INTO schema_version (version, description) VALUES (?, ?)",
+                (1, "Canonical table schema normalization"),
+            )
+            logger.info("Migration 1 successfully applied.")
+
+    def get_schema_version(self) -> int:
+        """Returns the current applied database schema version number."""
+        with self.get_connection() as conn:
+            cur = conn.execute("SELECT COALESCE(MAX(version), 0) FROM schema_version")
+            return int(cur.fetchone()[0])
+
     def init_db(self, schema_file: Optional[str] = None) -> None:
-        """Executes schema.sql to ensure all tables, indexes, and constraints exist."""
+        """Executes schema.sql and runs versioned migrations to ensure DB is up to date."""
         if schema_file is None:
             schema_file = str(Path(__file__).parent / "schema.sql")
 
@@ -63,7 +116,8 @@ class DBManager:
                         "Initial default collection for uploaded research papers.",
                     ),
                 )
-        logger.info(f"Database initialized successfully at {self.db_path}")
+            self._run_migrations(conn)
+        logger.info(f"Database initialized and migrated successfully at {self.db_path}")
 
     # -----------------------------------------------------------------------
     # Collections Operations

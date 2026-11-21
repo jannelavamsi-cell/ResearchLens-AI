@@ -187,10 +187,10 @@ def test_normalize_table_dict_all_keys():
     }
     normalized = normalize_table_dict(input_table)
     assert normalized["page_number"] == 4
-    assert normalized["page"] == 4
+    assert "page" not in normalized
     assert normalized["table_index"] == 2
     assert normalized["headers"] == ["Model", "BLEU", "ROUGE"]
-    assert normalized["header"] == ["Model", "BLEU", "ROUGE"]
+    assert "header" not in normalized
     assert normalized["row_count"] == 2
     assert normalized["col_count"] == 3
     assert normalized["caption"] == "Evaluation on benchmark test set"

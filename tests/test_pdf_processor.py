@@ -87,3 +87,37 @@ def test_metadata_extractor():
         assert year == 2023
         assert doi == "10.1234/test.doi.123"
 
+
+def test_pdf_processor_edge_cases(tmp_path):
+    """Tests robustness on missing, empty, corrupted, and encrypted PDFs."""
+    import pymupdf
+
+    processor = PDFProcessor(enable_ocr=False)
+
+    # 1. Missing file
+    with pytest.raises(FileNotFoundError):
+        processor.process_pdf(str(tmp_path / "non_existent.pdf"))
+
+    # 2. Empty file (0 bytes)
+    empty_pdf = tmp_path / "empty.pdf"
+    empty_pdf.write_bytes(b"")
+    with pytest.raises(ValueError, match="empty"):
+        processor.process_pdf(str(empty_pdf))
+
+    # 3. Non-PDF / Corrupted file
+    corrupt_pdf = tmp_path / "corrupt.pdf"
+    corrupt_pdf.write_bytes(b"This is a plaintext file renamed to .pdf with no PDF headers.")
+    with pytest.raises(ValueError, match="invalid or corrupt"):
+        processor.process_pdf(str(corrupt_pdf))
+
+    # 4. Encrypted PDF
+    enc_pdf = tmp_path / "encrypted.pdf"
+    doc = pymupdf.open()
+    doc.new_page(width=400, height=400)
+    doc.save(str(enc_pdf), encryption=pymupdf.PDF_ENCRYPT_AES_256, user_pw="pass123")
+    doc.close()
+
+    with pytest.raises(ValueError, match="encrypted or password-protected"):
+        processor.process_pdf(str(enc_pdf))
+
+

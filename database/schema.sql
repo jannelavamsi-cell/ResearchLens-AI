@@ -134,3 +134,10 @@ CREATE TABLE IF NOT EXISTS results_tables (
     table_json TEXT NOT NULL,
     FOREIGN KEY (paper_id) REFERENCES papers(id) ON DELETE CASCADE
 );
+
+-- Versioned Schema Migrations Tracker
+CREATE TABLE IF NOT EXISTS schema_version (
+    version INTEGER PRIMARY KEY,
+    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    description TEXT NOT NULL
+);

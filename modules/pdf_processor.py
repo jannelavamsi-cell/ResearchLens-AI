@@ -125,80 +125,98 @@ class PDFProcessor:
         if not path.exists():
             raise FileNotFoundError(f"PDF file not found at: {file_path}")
 
-        doc = pymupdf.open(str(path))
+        if path.stat().st_size == 0:
+            raise ValueError(f"File '{path.name}' is empty (0 bytes).")
+
+        try:
+            doc = pymupdf.open(str(path))
+        except Exception as err:
+            raise ValueError(f"Unable to read file '{path.name}' as PDF (invalid or corrupt format): {err}") from err
+
+        if doc.is_encrypted:
+            doc.close()
+            raise ValueError(
+                f"PDF '{path.name}' is encrypted or password-protected. Please upload an unencrypted academic document."
+            )
+
+        if len(doc) == 0:
+            doc.close()
+            raise ValueError(f"PDF '{path.name}' contains no readable pages.")
+
         raw_pages: List[Tuple[int, str, bool]] = []  # (page_num, text, is_ocr)
         extracted_tables: List[Dict[str, Any]] = []
         scanned_pages: List[int] = []
-
-        # Pass 1: Extract raw block text per page
-        for page_idx in range(len(doc)):
-            page = doc[page_idx]
-            page_num = page_idx + 1
-
-            page_text = self._extract_page_text_two_column(page)
-            is_ocr = False
-
-            # Scanned page detection (< 100 characters of text)
-            if len(page_text.strip()) < 100:
-                scanned_pages.append(page_num)
-                is_ocr = True
-                if self.enable_ocr:
-                    ocr_res = self._ocr_page(page)
-                    if ocr_res:
-                        page_text = ocr_res
-
-            raw_pages.append((page_num, page_text, is_ocr))
-
-            # Attempt Table Extraction via PyMuPDF find_tables()
-            try:
-                tables = page.find_tables()
-                for table_idx, tab in enumerate(tables):
-                    df_data = tab.extract()
-                    if df_data and len(df_data) > 1:
-                        raw_headers = [
-                            str(c).strip() if c else f"Col_{i+1}"
-                            for i, c in enumerate(df_data[0])
-                        ]
-                        cleaned_rows = [
-                            [str(c).strip() if c is not None else "" for c in row]
-                            for row in df_data[1:]
-                        ]
-                        is_res = is_likely_results_table(raw_headers, cleaned_rows)
-                        extracted_tables.append(
-                            normalize_table_dict(
-                                {
-                                    "page_number": page_num,
-                                    "table_index": table_idx + 1,
-                                    "headers": raw_headers,
-                                    "header": raw_headers,
-                                    "rows": cleaned_rows,
-                                    "row_count": len(cleaned_rows),
-                                    "col_count": len(raw_headers),
-                                    "caption": "",
-                                    "is_results_table": is_res,
-                                }
-                            )
-                        )
-            except Exception as e:
-                logger.debug(f"Table extraction skipped on page {page_num}: {e}")
-
-        # Pass 2: Detect recurring headers/footers across pages
-        all_texts = [p[1] for p in raw_pages]
-        repeated_headers = detect_repeated_headers_footers(all_texts, threshold=0.6)
-
-        # Pass 3: Clean text and build final PageSchema objects
         cleaned_pages: List[PageSchema] = []
-        for page_num, raw_text, is_ocr in raw_pages:
-            cleaned = clean_page_text(raw_text, repeated_headers=repeated_headers)
-            cleaned_pages.append(
-                PageSchema(
-                    page_number=page_num,
-                    text=cleaned,
-                    is_ocr=is_ocr,
-                )
-            )
 
-        doc.close()
+        try:
+            # Pass 1: Extract raw block text per page
+            for page_idx in range(len(doc)):
+                page = doc[page_idx]
+                page_num = page_idx + 1
+
+                page_text = self._extract_page_text_two_column(page)
+                is_ocr = False
+
+                # Scanned page detection (< 100 characters of text)
+                if len(page_text.strip()) < 100:
+                    scanned_pages.append(page_num)
+                    is_ocr = True
+                    if self.enable_ocr:
+                        ocr_res = self._ocr_page(page)
+                        if ocr_res:
+                            page_text = ocr_res
+
+                raw_pages.append((page_num, page_text, is_ocr))
+
+                # Attempt Table Extraction via PyMuPDF find_tables()
+                try:
+                    tables = page.find_tables()
+                    for table_idx, tab in enumerate(tables):
+                        df_data = tab.extract()
+                        if df_data and len(df_data) > 1:
+                            raw_headers = [
+                                str(c).strip() if c else f"Col_{i+1}"
+                                for i, c in enumerate(df_data[0])
+                            ]
+                            cleaned_rows = [
+                                [str(c).strip() if c is not None else "" for c in row]
+                                for row in df_data[1:]
+                            ]
+                            is_res = is_likely_results_table(raw_headers, cleaned_rows)
+                            extracted_tables.append(
+                                normalize_table_dict(
+                                    {
+                                        "page_number": page_num,
+                                        "table_index": table_idx + 1,
+                                        "headers": raw_headers,
+                                        "rows": cleaned_rows,
+                                        "row_count": len(cleaned_rows),
+                                        "col_count": len(raw_headers),
+                                        "caption": "",
+                                        "is_results_table": is_res,
+                                    }
+                                )
+                            )
+                except Exception as e:
+                    logger.debug(f"Table extraction skipped on page {page_num}: {e}")
+
+            # Pass 2: Detect recurring headers/footers across pages
+            all_texts = [p[1] for p in raw_pages]
+            repeated_headers = detect_repeated_headers_footers(all_texts, threshold=0.6)
+
+            # Pass 3: Clean text and build final PageSchema objects
+            for page_num, raw_text, is_ocr in raw_pages:
+                cleaned = clean_page_text(raw_text, repeated_headers=repeated_headers)
+                cleaned_pages.append(
+                    PageSchema(
+                        page_number=page_num,
+                        text=cleaned,
+                        is_ocr=is_ocr,
+                    )
+                )
+
+        finally:
+            doc.close()
 
         scan_report = {
             "total_pages": len(cleaned_pages),

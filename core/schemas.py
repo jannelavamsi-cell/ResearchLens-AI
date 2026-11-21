@@ -230,3 +230,19 @@ class ResearchGapItem(BaseModel):
     frequency_count: int = Field(default=1)
     suggested_direction: str
     rationale: str
+
+
+class CanonicalTable(BaseModel):
+    """Canonical representation of an extracted table with strictly validated keys."""
+
+    page_number: int = Field(..., description="1-indexed physical page number")
+    table_index: int = Field(default=1, description="1-indexed table sequence on the page")
+    headers: List[str] = Field(default_factory=list, description="Column header strings")
+    rows: List[List[str]] = Field(default_factory=list, description="Table body row cell values")
+    row_count: int = Field(default=0, description="Number of data rows")
+    col_count: int = Field(default=0, description="Number of columns")
+    caption: str = Field(default="", description="Table caption or title")
+    is_results_table: bool = Field(default=False, description="Whether table contains empirical results")
+    paper_id: Optional[str] = Field(default=None, description="Associated paper ID")
+    id: Optional[str] = Field(default=None, description="Database row ID if stored")
+

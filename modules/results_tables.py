@@ -66,10 +66,8 @@ def normalize_table_dict(table_data: Any) -> Dict[str, Any]:
     if not isinstance(table_data, dict):
         return {
             "page_number": 1,
-            "page": 1,
             "table_index": 1,
             "headers": [],
-            "header": [],
             "rows": [],
             "row_count": 0,
             "col_count": 0,
@@ -156,10 +154,8 @@ def normalize_table_dict(table_data: Any) -> Dict[str, Any]:
 
     normalized: Dict[str, Any] = {
         "page_number": page_num,
-        "page": page_num,
         "table_index": t_idx,
         "headers": headers,
-        "header": headers,
         "rows": rows,
         "row_count": row_count,
         "col_count": col_count,
