@@ -4,6 +4,7 @@ Tests for Phase 7: Literature Review Synthesis, Thematic Clustering, and Researc
 
 import os
 import tempfile
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -127,7 +128,17 @@ def test_thematic_clustering():
     assert len(clusters) >= 1
 
 
-def test_synthesize_literature_review(test_env):
+@patch("modules.literature_review.get_llm_client")
+def test_synthesize_literature_review(mock_get_llm, test_env):
+    mock_client = MagicMock()
+    mock_client.generate.return_value = (
+        "## Introduction\nThis literature review analyzes recent developments across the uploaded papers.\n\n"
+        "## Methodological Comparison\nThe reviewed works deploy diverse algorithmic paradigms [ClinicalBERT, p. 1].\n\n"
+        "## Research Gaps & Open Challenges\nSeveral recurring constraints are identified [ClinicalBERT, p. 2].\n\n"
+        "## Conclusion\nIn conclusion, the corpus illustrates rapid progress."
+    )
+    mock_get_llm.return_value = mock_client
+
     db, col_id, pids = test_env
 
     draft = synthesize_literature_review(collection_id=col_id, paper_ids=pids, db=db)
