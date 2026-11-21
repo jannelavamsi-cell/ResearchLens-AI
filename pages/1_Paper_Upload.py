@@ -18,11 +18,13 @@ from modules.metadata_extraction import MetadataExtractor
 from modules.pdf_processor import PDFProcessor
 from modules.results_tables import normalize_table_dict
 from modules.section_detection import detect_sections_from_pages
+from ui.theme import inject_custom_css
 
 logger = get_logger("page.upload")
 db = DBManager(settings.database_path)
 
 st.set_page_config(page_title="Paper Upload & Library", page_icon="📄", layout="wide")
+inject_custom_css()
 
 # Ensure active collection
 if "active_collection_id" not in st.session_state:

@@ -17,6 +17,7 @@ from modules.paper_comparison import (
     matrix_to_markdown,
 )
 from modules.research_extraction import FIELD_DESCRIPTIONS
+from ui.theme import inject_custom_css
 
 logger = logging.getLogger("researchlens.ui.comparison")
 
@@ -25,6 +26,7 @@ st.set_page_config(
     page_icon="⚖️",
     layout="wide",
 )
+inject_custom_css()
 
 db = DatabaseManager()
 

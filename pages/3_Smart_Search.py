@@ -15,11 +15,13 @@ from modules.bm25_search import BM25SearchEngine
 from modules.hybrid_search import HybridSearchEngine
 from modules.reranking import CrossEncoderReranker
 from modules.semantic_search import SemanticSearchEngine
+from ui.theme import inject_custom_css
 
 logger = get_logger("page.search")
 db = DBManager(settings.database_path)
 
 st.set_page_config(page_title="Smart Hybrid Search", page_icon="⚡", layout="wide")
+inject_custom_css()
 
 # Ensure active collection
 if "active_collection_id" not in st.session_state:

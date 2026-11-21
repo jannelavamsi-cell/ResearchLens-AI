@@ -13,6 +13,7 @@ from modules.literature_review import (
     review_to_markdown,
     synthesize_literature_review,
 )
+from ui.theme import inject_custom_css
 
 logger = logging.getLogger("researchlens.ui.lit_review")
 
@@ -21,6 +22,7 @@ st.set_page_config(
     page_icon="📖",
     layout="wide",
 )
+inject_custom_css()
 
 db = DatabaseManager()
 

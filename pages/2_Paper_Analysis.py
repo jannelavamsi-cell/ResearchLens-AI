@@ -20,6 +20,7 @@ from modules.results_tables import (
     extract_tables_from_pdf,
     get_paper_results_tables,
 )
+from ui.theme import inject_custom_css
 
 logger = logging.getLogger("researchlens.ui.analysis")
 
@@ -28,6 +29,7 @@ st.set_page_config(
     page_icon="🔬",
     layout="wide",
 )
+inject_custom_css()
 
 db = DatabaseManager()
 

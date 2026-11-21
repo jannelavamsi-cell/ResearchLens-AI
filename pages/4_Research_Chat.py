@@ -10,6 +10,7 @@ import streamlit as st
 
 from database.db_manager import DatabaseManager
 from modules.rag_pipeline import answer_research_question
+from ui.theme import inject_custom_css
 
 logger = logging.getLogger("researchlens.ui.chat")
 
@@ -18,6 +19,7 @@ st.set_page_config(
     page_icon="💬",
     layout="wide",
 )
+inject_custom_css()
 
 db = DatabaseManager()
 
