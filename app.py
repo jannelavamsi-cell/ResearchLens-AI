@@ -43,27 +43,27 @@ if "active_collection_id" not in st.session_state:
 
 pages = {
     "Overview": [
-        st.Page("pages/0_Dashboard.py", title="Dashboard", icon=":material/dashboard:", default=True),
+        st.Page("pages/0_Dashboard.py", title="Dashboard", icon=":material/dashboard:", default=True, url_path="dashboard"),
     ],
     "Library": [
-        st.Page("pages/1_Paper_Upload.py", title="PDF Upload", icon=":material/upload_file:"),
+        st.Page("pages/1_Paper_Upload.py", title="PDF Upload", icon=":material/upload_file:", url_path="upload"),
     ],
     "Analyze": [
-        st.Page("pages/2_Paper_Analysis.py", title="Paper Analysis", icon=":material/analytics:"),
-        st.Page("pages/2b_Keyword_Extraction.py", title="Keyword Extraction", icon=":material/label:"),
-        st.Page("pages/3_Smart_Search.py", title="Semantic Search", icon=":material/search:"),
+        st.Page("pages/2_Paper_Analysis.py", title="Paper Analysis", icon=":material/analytics:", url_path="analysis"),
+        st.Page("pages/2b_Keyword_Extraction.py", title="Keyword Extraction", icon=":material/label:", url_path="keywords"),
+        st.Page("pages/3_Smart_Search.py", title="Semantic Search", icon=":material/search:", url_path="search"),
     ],
     "Intelligence": [
-        st.Page("pages/4_Research_Chat.py", title="AI Assistant", icon=":material/smart_toy:"),
-        st.Page("pages/5_Paper_Comparison.py", title="Paper Comparison", icon=":material/compare_arrows:"),
+        st.Page("pages/4_Research_Chat.py", title="AI Assistant", icon=":material/smart_toy:", url_path="assistant"),
+        st.Page("pages/5_Paper_Comparison.py", title="Paper Comparison", icon=":material/compare_arrows:", url_path="comparison"),
     ],
     "Write": [
-        st.Page("pages/6_Literature_Review.py", title="Literature Review", icon=":material/auto_stories:"),
-        st.Page("pages/7_Research_Gaps.py", title="Research Gap Analysis", icon=":material/lightbulb:"),
+        st.Page("pages/6_Literature_Review.py", title="Literature Review", icon=":material/auto_stories:", url_path="literature_review"),
+        st.Page("pages/7_Research_Gaps.py", title="Research Gap Analysis", icon=":material/lightbulb:", url_path="research_gaps"),
     ],
     "More": [
-        st.Page("pages/8_Trends_and_Export.py", title="Trends & Export", icon=":material/insights:"),
-        st.Page("pages/9_Settings.py", title="Settings", icon=":material/settings:"),
+        st.Page("pages/8_Trends_and_Export.py", title="Trends & Export", icon=":material/insights:", url_path="trends"),
+        st.Page("pages/9_Settings.py", title="Settings", icon=":material/settings:", url_path="settings"),
     ],
 }
 

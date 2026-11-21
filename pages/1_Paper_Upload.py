@@ -1,89 +1,50 @@
 """
 ResearchLens AI - Paper Upload & Library Management Page.
 Supports multi-file PDF upload, SHA-256 deduplication, two-column parsing,
-section detection, chunking, metadata extraction, and collection management.
+section detection, chunking, metadata extraction, and collection management with confirmation dialogs.
 """
 
 import hashlib
+import json
+import logging
 from pathlib import Path
 from typing import Tuple
 
 import streamlit as st
 
 from core.config import settings
-from core.logging_config import get_logger
 from database.db_manager import DBManager
 from modules.chunking import SectionAwareChunker
 from modules.metadata_extraction import MetadataExtractor
 from modules.pdf_processor import PDFProcessor
 from modules.results_tables import normalize_table_dict
 from modules.section_detection import detect_sections_from_pages
+from ui.components import (
+    banner,
+    empty_state,
+    page_header,
+    render_footer,
+    safe_page_render,
+    status_badge,
+)
 from ui.theme import inject_custom_css
 
-logger = get_logger("page.upload")
+logger = logging.getLogger("researchlens.ui.upload")
 db = DBManager(settings.database_path)
-
-st.set_page_config(page_title="Paper Upload & Library", page_icon="📄", layout="wide")
 inject_custom_css()
 
-# Ensure active collection
-if "active_collection_id" not in st.session_state:
-    collections = db.list_collections()
-    if collections:
-        st.session_state["active_collection_id"] = collections[0]["id"]
-        st.session_state["active_collection_name"] = collections[0]["name"]
-    else:
-        cid = db.create_collection("Default Workspace")
-        st.session_state["active_collection_id"] = cid
-        st.session_state["active_collection_name"] = "Default Workspace"
-
-current_collection_id = st.session_state["active_collection_id"]
-current_collection_name = st.session_state["active_collection_name"]
-
-st.title("📄 Paper Upload & Library Management")
-st.markdown(
-    f"Active Workspace: **{current_collection_name}** | Target Processing: Section-Aware, Two-Column Grounded"
-)
 
 # ---------------------------------------------------------------------------
-# Section 1: Upload Widget
+# Ingestion Routine with Granular Multi-Stage Feedback
 # ---------------------------------------------------------------------------
-
-upload_container = st.container(border=True)
-with upload_container:
-    st.subheader("Upload Research Papers")
-    st.write(
-        "Upload one or more academic research papers in PDF format. Files are validated, deduplicated, "
-        "and processed into verifiable section-bounded passages."
-    )
-
-    uploaded_files = st.file_uploader(
-        "Choose PDF Files",
-        type=["pdf"],
-        accept_multiple_files=True,
-        help="Maximum file size: 50MB per paper. Only standard and academic PDFs supported.",
-    )
-
-    col_btn, col_sample = st.columns([1, 1])
-    process_clicked = col_btn.button(
-        "🚀 Process Uploaded Papers", type="primary", disabled=not uploaded_files
-    )
-    load_samples = col_sample.button("📚 Load 3 Pre-Generated Academic Samples")
-
-# ---------------------------------------------------------------------------
-# Helper: Processing Routine
-# ---------------------------------------------------------------------------
-
 
 def process_single_pdf(file_bytes: bytes, filename: str, collection_id: str) -> Tuple[bool, str]:
     """Processes a single PDF file through the document ingestion pipeline."""
-    # Compute SHA-256
+    # Stage 1: Validate & Compute SHA-256
     file_hash = hashlib.sha256(file_bytes).hexdigest()
-
-    # Check deduplication
     existing = db.get_paper_by_hash(collection_id, file_hash)
     if existing:
-        return False, f"Paper '{filename}' already exists in this collection (Duplicate SHA-256)."
+        return False, f"Paper '{filename}' already exists in this workspace (Duplicate SHA-256)."
 
     # Save to disk
     save_dir = Path(settings.upload_dir) / collection_id
@@ -104,7 +65,7 @@ def process_single_pdf(file_bytes: bytes, filename: str, collection_id: str) -> 
     db.update_paper_status(paper_id, "processing", "Extracting text and layout...")
 
     try:
-        # Step 1: Process PDF text and tables
+        # Stage 2: Extract text and layout
         processor = PDFProcessor(enable_ocr=True)
         pages, tables, scan_report = processor.process_pdf(str(dest_path))
 
@@ -112,12 +73,9 @@ def process_single_pdf(file_bytes: bytes, filename: str, collection_id: str) -> 
             db.update_paper_status(paper_id, "failed", "No extractable text found in PDF.")
             return False, f"Failed to extract text from '{filename}'."
 
-        # Insert pages into DB
         db.insert_pages(paper_id, pages)
 
-        # Insert extracted results tables if any
-        import json
-
+        # Stage 3: Normalize and insert results tables
         for tab in tables:
             norm_tab = normalize_table_dict(tab)
             db.insert_results_table(
@@ -127,11 +85,11 @@ def process_single_pdf(file_bytes: bytes, filename: str, collection_id: str) -> 
                 table_json=json.dumps(norm_tab),
             )
 
-        # Step 2: Detect academic sections
+        # Stage 4: Detect academic sections
         page_tuples = [(p.page_number, p.text) for p in pages]
         sections = detect_sections_from_pages(page_tuples)
 
-        # Step 3: Section-aware chunking
+        # Stage 5: Section-aware chunking
         chunker = SectionAwareChunker(
             chunk_size_tokens=settings.chunk_size_tokens,
             chunk_overlap_tokens=settings.chunk_overlap_tokens,
@@ -140,7 +98,7 @@ def process_single_pdf(file_bytes: bytes, filename: str, collection_id: str) -> 
         chunks = chunker.chunk_paper(paper_id, pages, sections)
         db.insert_chunks(chunks)
 
-        # Step 4: Metadata extraction
+        # Stage 6: Metadata extraction
         extractor = MetadataExtractor(enable_online_enrichment=False)
         metadata = extractor.extract_metadata(str(dest_path))
 
@@ -157,10 +115,7 @@ def process_single_pdf(file_bytes: bytes, filename: str, collection_id: str) -> 
 
         db.update_paper_status(paper_id, "ready", f"Successfully indexed {len(chunks)} chunks.")
         logger.info(f"Successfully processed paper '{filename}' (ID: {paper_id})")
-        return (
-            True,
-            f"Successfully processed '{filename}' ({len(pages)} pages, {len(chunks)} chunks).",
-        )
+        return True, f"Successfully processed '{filename}' ({len(pages)} pages, {len(chunks)} chunks)."
 
     except Exception as e:
         logger.error(f"Error processing '{filename}': {e}", exc_info=True)
@@ -168,126 +123,189 @@ def process_single_pdf(file_bytes: bytes, filename: str, collection_id: str) -> 
         return False, f"Error processing '{filename}': {str(e)}"
 
 
-# Handle pre-generated sample button
-if load_samples:
-    fixtures_dir = Path("tests/fixtures")
-    sample_files = list(fixtures_dir.glob("*.pdf"))
-    if not sample_files:
-        from tests.fixtures.create_sample_pdfs import generate_all_sample_pdfs
-
-        generate_all_sample_pdfs()
-        sample_files = list(fixtures_dir.glob("*.pdf"))
-
-    with st.status("Loading and indexing sample research papers...", expanded=True) as status:
-        for sf in sample_files:
-            st.write(f"Reading {sf.name}...")
-            with open(sf, "rb") as f:
-                data = f.read()
-            ok, msg = process_single_pdf(data, sf.name, current_collection_id)
-            if ok:
-                st.write(f"✅ {msg}")
-            else:
-                st.write(f"ℹ️ {msg}")
-        status.update(label="Sample papers ready in active workspace!", state="complete")
-    st.rerun()
-
-# Handle upload processing
-if process_clicked and uploaded_files:
-    progress_bar = st.progress(0.0)
-    total_files = len(uploaded_files)
-
-    with st.status("Processing uploaded papers...", expanded=True) as status:
-        for idx, uploaded_file in enumerate(uploaded_files):
-            # Size limit check (50 MB)
-            if uploaded_file.size > (50 * 1024 * 1024):
-                st.error(f"File '{uploaded_file.name}' exceeds 50MB limit.")
-                continue
-
-            st.write(f"Processing `{uploaded_file.name}` ({idx + 1}/{total_files})...")
-            file_bytes = uploaded_file.read()
-            success, message = process_single_pdf(
-                file_bytes, uploaded_file.name, current_collection_id
-            )
-
-            if success:
-                st.write(f"✅ {message}")
-            else:
-                st.write(f"⚠️ {message}")
-
-            progress_bar.progress((idx + 1) / total_files)
-
-        status.update(label="All uploads processed!", state="complete")
-    st.rerun()
-
 # ---------------------------------------------------------------------------
-# Section 2: Library Table & Action Controls
+# Dialogs: Deletion & Replacement
 # ---------------------------------------------------------------------------
 
-st.divider()
-st.subheader("📚 Active Collection Papers")
-
-papers = db.list_papers(current_collection_id)
-
-if not papers:
-    st.info(
-        "No papers uploaded in this workspace yet. Upload PDFs above or click 'Load 3 Pre-Generated Academic Samples'."
-    )
-else:
-    for p in papers:
-        with st.container(border=True):
-            col_info, col_stat, col_act = st.columns([3, 1, 1])
-
-            with col_info:
-                st.markdown(f"#### {p.get('title') or p.get('filename', 'Unknown Paper')}")
-                st.caption(
-                    f"**Authors:** {p.get('authors') or 'Unknown'} | "
-                    f"**Year:** {p.get('year') or 'N/A'} | "
-                    f"**Pages:** {p.get('n_pages', 0)} | "
-                    f"**DOI:** {p.get('doi') or 'None'}"
-                )
-                if p.get("metadata_json"):
-                    import json
-
+@st.dialog("Confirm Paper Deletion")
+def dialog_delete_paper(paper_id: str, paper_title: str) -> None:
+    st.write(f"Are you sure you want to permanently delete **{paper_title}**?")
+    st.caption("This will cascade delete all associated passages, extractions, keywords, and tables.")
+    col_c, col_d = st.columns(2)
+    with col_c:
+        if st.button("Cancel", use_container_width=True, key="cancel_del_btn"):
+            st.rerun()
+    with col_d:
+        if st.button("Delete Permanently", type="primary", use_container_width=True, key="confirm_del_btn"):
+            p = db.get_paper(paper_id)
+            if p and p.get("file_path"):
+                f = Path(p["file_path"])
+                if f.exists():
                     try:
-                        meta = json.loads(p.get("metadata_json") or "{}")
+                        f.unlink()
                     except Exception:
-                        meta = {}
-                    scan = meta.get("scan_report", {})
-                    if scan.get("has_scanned_pages"):
-                        st.warning(
-                            f"⚠️ Contains {scan.get('scanned_pages_count', 0)} scanned pages: "
-                            f"{scan.get('scanned_pages', [])}. OCR was {'applied' if scan.get('ocr_applied') else 'unavailable'}."
-                        )
+                        pass
+            db.delete_paper(paper_id)
+            st.toast(f"Deleted '{paper_title}'", icon="🗑️")
+            st.rerun()
 
-            with col_stat:
-                st.write("")
-                st.write("")
-                status = p.get("status", "unknown")
-                if status == "ready":
-                    st.success("🟢 Ready")
-                elif status == "processing":
-                    st.info("⏳ Processing")
-                elif status == "queued":
-                    st.warning("⏱️ Queued")
+
+@st.dialog("Confirm Workspace Deletion")
+def dialog_delete_collection(col_id: str, col_name: str) -> None:
+    st.write(f"Are you sure you want to delete workspace **{col_name}**?")
+    st.error("⚠️ All papers, extractions, chat history, and reports in this workspace will be deleted.")
+    col_c, col_d = st.columns(2)
+    with col_c:
+        if st.button("Cancel", use_container_width=True, key="cancel_col_del"):
+            st.rerun()
+    with col_d:
+        if st.button("Delete Workspace", type="primary", use_container_width=True, key="confirm_col_del"):
+            db.delete_collection(col_id)
+            all_cols = db.list_collections()
+            if all_cols:
+                st.session_state["active_collection_id"] = all_cols[0]["id"]
+                st.session_state["active_collection_name"] = all_cols[0]["name"]
+            st.toast(f"Workspace '{col_name}' deleted.", icon="🗑️")
+            st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Main Page View
+# ---------------------------------------------------------------------------
+
+@safe_page_render
+def render_upload_page() -> None:
+    current_col_id = st.session_state.get("active_collection_id", "")
+    current_col_name = st.session_state.get("active_collection_name", "Default Workspace")
+
+    page_header(
+        title="PDF Upload & Library Management",
+        subtitle=f"Upload academic PDFs to workspace: {current_col_name}. Two-column parsing, section detection, and OCR fallback enabled.",
+        icon="📄",
+        badge="Ingestion Engine",
+    )
+
+    # 1. Upload Container
+    with st.container(border=True):
+        st.markdown("#### 📥 Add Research Papers")
+        st.write("Upload multi-page research PDFs. Files are validated, deduplicated via SHA-256, and parsed into verifiable passages.")
+
+        uploaded_files = st.file_uploader(
+            "Select PDF Documents",
+            type=["pdf"],
+            accept_multiple_files=True,
+            help="Maximum 50MB per paper. Only valid scientific PDFs supported.",
+        )
+
+        btn_col1, btn_col2, btn_col3 = st.columns([1.5, 1.5, 1])
+        with btn_col1:
+            process_btn = st.button("🚀 Ingest Selected Files", type="primary", disabled=not uploaded_files, use_container_width=True)
+        with btn_col2:
+            samples_btn = st.button("📚 Load 3 Academic Samples", use_container_width=True)
+        with btn_col3:
+            if st.button("🗑️ Delete Workspace", use_container_width=True, key="btn_del_col_trigger"):
+                dialog_delete_collection(current_col_id, current_col_name)
+
+    # Ingestion handler with multi-stage progress
+    if process_btn and uploaded_files:
+        p_bar = st.progress(0.0)
+        total = len(uploaded_files)
+
+        with st.status(f"Ingesting {total} research paper(s)...", expanded=True) as status:
+            for idx, uf in enumerate(uploaded_files):
+                st.write(f"**Stage 1:** Validating `{uf.name}` ({idx + 1}/{total})...")
+                if uf.size > (50 * 1024 * 1024):
+                    st.error(f"'{uf.name}' exceeds the 50MB size limit.")
+                    continue
+
+                st.write(f"**Stage 2:** Extracting text & two-column layout from `{uf.name}`...")
+                data = uf.read()
+                ok, msg = process_single_pdf(data, uf.name, current_col_id)
+
+                if ok:
+                    st.write(f"✅ {msg}")
+                    st.toast(f"Ingested '{uf.name}'", icon="✅")
                 else:
-                    st.error("❌ Failed")
-                    if p.get("status_message"):
-                        st.caption(p.get("status_message", ""))
+                    st.write(f"⚠️ {msg}")
+                    st.toast(msg, icon="⚠️")
 
-            with col_act:
-                st.write("")
-                st.write("")
-                pid = p.get("id", "")
-                pfilename = p.get("filename", "paper")
-                if pid and st.button("🗑️ Delete", key=f"del_{pid}", use_container_width=True):
-                    # Delete file from disk
-                    if p.get("file_path"):
-                        fpath = Path(p["file_path"])
-                        if fpath.exists():
-                            try:
-                                fpath.unlink()
-                            except Exception:
-                                pass
-                    db.delete_paper(pid)
-                    st.success(f"Removed '{pfilename}'")
-                    st.rerun()
+                p_bar.progress((idx + 1) / total)
+
+            status.update(label="All selected papers processed!", state="complete")
+        st.rerun()
+
+    # Sample loader handler
+    if samples_btn:
+        fixtures_dir = Path("tests/fixtures")
+        sample_files = list(fixtures_dir.glob("*.pdf"))
+        if not sample_files:
+            from tests.fixtures.create_sample_pdfs import generate_all_sample_pdfs
+            generate_all_sample_pdfs()
+            sample_files = list(fixtures_dir.glob("*.pdf"))
+
+        with st.status("Ingesting benchmark sample papers...", expanded=True) as status:
+            for sf in sample_files:
+                st.write(f"Ingesting `{sf.name}`...")
+                with open(sf, "rb") as f:
+                    data = f.read()
+                ok, msg = process_single_pdf(data, sf.name, current_col_id)
+                st.write(f"{'✅' if ok else 'ℹ️'} {msg}")
+            status.update(label="Sample papers ready in workspace!", state="complete")
+        st.toast("3 Academic samples loaded!", icon="📚")
+        st.rerun()
+
+    # 2. Paper Library Section
+    st.markdown("<div style='margin-top: 1.5rem;'></div>", unsafe_allow_html=True)
+    st.markdown("### 📚 Workspace Paper Library")
+
+    papers = db.list_papers(current_col_id)
+
+    if not papers:
+        empty_state(
+            title="Library is Empty",
+            message="No research papers have been uploaded to this workspace yet. Drag and drop PDFs above or load sample papers.",
+            icon="📭",
+        )
+    else:
+        for p in papers:
+            pid = p.get("id", "")
+            title = p.get("title") or p.get("filename", "Untitled Paper")
+            authors = p.get("authors") or "Authors not detected"
+            year = p.get("year") or "Year unknown"
+            pages = p.get("n_pages", 0)
+            status = p.get("status", "ready")
+            doi = p.get("doi") or "No DOI"
+
+            with st.container(border=True):
+                col_meta, col_status, col_actions = st.columns([3, 1, 1])
+
+                with col_meta:
+                    st.markdown(f"#### {title}")
+                    st.caption(f"**Authors:** {authors} | **Year:** {year} | **Pages:** {pages} | **DOI:** `{doi}`")
+                    if p.get("metadata_json"):
+                        try:
+                            meta = json.loads(p.get("metadata_json") or "{}")
+                            scan = meta.get("scan_report", {})
+                            if scan.get("has_scanned_pages"):
+                                banner("warning", "Scanned Pages Detected", f"Contains {scan.get('scanned_pages_count', 0)} scanned pages. OCR was applied.")
+                        except Exception:
+                            pass
+
+                with col_status:
+                    st.write("")
+                    st.markdown(status_badge(status), unsafe_allow_html=True)
+
+                with col_actions:
+                    st.write("")
+                    act_col1, act_col2 = st.columns(2)
+                    with act_col1:
+                        if st.button("🔍 View", key=f"view_{pid}", use_container_width=True):
+                            st.switch_page("pages/2_Paper_Analysis.py")
+                    with act_col2:
+                        if st.button("🗑️", key=f"del_{pid}", use_container_width=True, help="Delete paper"):
+                            dialog_delete_paper(pid, title)
+
+    render_footer()
+
+
+render_upload_page()
