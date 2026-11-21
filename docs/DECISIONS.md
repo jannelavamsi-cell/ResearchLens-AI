@@ -45,3 +45,42 @@ This document records key technical decisions, trade-offs, and rationale made du
 - **Decision:** Embedded automatic lazy synchronization into `SemanticSearchEngine.search()` and `BM25SearchEngine.search()`. If an index is empty or unloaded, it automatically loads all ready chunks from SQLite and builds the vector/sparse indexes on demand.
 - **Rationale:** Eliminates manual re-indexing hurdles and guarantees zero retrieval misses.
 
+### DEC-009: Canonical Table Schema and Database Version Migration Engine
+- **Context:** PyMuPDF table extraction produced varying dict shapes across iterations, causing runtime KeyErrors (`'row_count'`) when loading legacy database entries in `pages/2_Paper_Analysis.py`.
+- **Decision:** Defined a strict Pydantic `CanonicalTable` schema with normalized keys (`page_number`, `table_index`, `headers`, `rows`, `row_count`, `col_count`, `caption`, `is_results_table`), built an automatic dictionary normalizer, and implemented a versioned migration engine (`schema_version` table) in `database/db_manager.py`.
+- **Rationale:** Eliminates crashes caused by missing keys on old/new records and establishes a reliable upgrade path for database schemas.
+
+### DEC-010: Direct Chrome DevTools Protocol (CDP) WebSocket Screenshot Automation
+- **Context:** Streamlit is a reactive single-page app (SPA) requiring WebSocket hydration. Standard headless HTTP requests or premature DOM captures resulted in blank screens or spinner states.
+- **Decision:** Built a native Python CDP WebSocket client (`scratch/capture_all_pages.py`) that launches headless Chrome, monitors `Page.loadEventFired` and Streamlit's WebSocket traffic, waits for hydration, and captures full-resolution PNG screenshots.
+- **Rationale:** Fully automated visual regression testing and verifiable evidence without requiring heavy external dependencies like Selenium or Playwright.
+
+### DEC-011: Numeric & Metric Density Heuristics for Scientific Results Table Detection
+- **Context:** Research papers contain layout tables, author lists, or textual tables that lack quantitative empirical results. Treating every table as a results table cluttered downstream comparative analyses.
+- **Decision:** Enhanced `is_likely_results_table()` in `modules/results_tables.py` to evaluate numeric cell density (>= 25%), model candidate tokens (e.g. `bert`, `llama`, `transformer`, `baseline`), and metric keywords (`accuracy`, `f1`, `bleu`, `rouge`, `loss`, `map`).
+- **Rationale:** Guarantees that only genuine empirical performance tables are tagged for cross-paper quantitative comparison.
+
+### DEC-012: Scientific Entity Matcher via Rule-Based spaCy Pattern Engine
+- **Context:** LLM zero-shot extraction of scientific entities (baselines, metrics, benchmarks) can suffer from omissions or formatting inconsistencies.
+- **Decision:** Implemented `extract_scientific_entities()` using spaCy's `Matcher` with rule-based linguistic patterns targeting common ML/NLP patterns (`F1[- ]score`, `BLEU[- ]\d`, `ResNet-\d+`, `GPT-\d+`, `ImageNet`, `GLUE`, etc.).
+- **Rationale:** Provides deterministic, fast, zero-cost entity extraction that enriches LLM extractions and structured metadata.
+
+### DEC-013: Domain-Specific Academic Stopword Filtering for KeyBERT Keyword Extraction
+- **Context:** General stopword lists leave generic academic vocabulary (e.g. "proposed method", "our approach", "results", "paper", "experimental setup") in KeyBERT extraction results.
+- **Decision:** Created `ACADEMIC_DOMAIN_STOPWORDS` and an explicit filtering stage in `keyword_extraction.py`, combined with extending candidate n-grams to (1, 3).
+- **Rationale:** Elevates keyword quality from generic research phrasing to domain-specific terminology (e.g., "contrastive loss", "diffusion models", "retrieval augmented generation").
+
+### DEC-014: Cross-Paper Metric Comparability Guards with Known Academic Benchmark Knowledge Base
+- **Context:** Multi-paper synthesis can hallucinate or naively claim Paper A outperforms Paper B when each was evaluated on different datasets or evaluation splits.
+- **Decision:** Built `check_comparability()` with an embedded knowledge base of standard ML/NLP benchmark datasets (`MMLongBench`, `HotpotQA`, `TriviaQA`, `RetrievalQA`, `SQuAD`, etc.). When differing benchmarks or metrics are detected, the system generates an explicit Comparability Warning and restricts synthesis prompts from performing direct score rankings.
+- **Rationale:** Enforces scientific integrity and aligns with peer-review standards for comparative literature analysis.
+
+### DEC-015: Empirical Evaluation Protocol with Dual Human Annotation Sheets
+- **Context:** Inventing synthetic ground-truth labels for evaluation yields misleading, ungrounded benchmark figures.
+- **Decision:** Developed `evaluation/generate_label_template.py`, which generates both human-readable Markdown annotation sheets and structured JSON schemas from uploaded PDFs. The evaluation harness (`evaluation/report.py`) reads real ground-truth files and outputs honest retrieval ablations and macro F1 scores to `evaluation/RESULTS.md`.
+- **Rationale:** Adheres to the core project principle of zero fake results while providing researchers with a practical annotation pipeline.
+
+### DEC-016: Unified Modern CSS Design System & Visual Reusable Component Architecture
+- **Context:** Stock Streamlit components provide limited visual hierarchy, inconsistent card margins, and poor readability for complex academic citations and comparative matrices.
+- **Decision:** Designed a cohesive design system in `ui/theme.py` and `ui/components.py` with academic glassmorphism styling, clean typography, badge indicators (verified vs unverified), metric cards, alert banners, and citation pills.
+- **Rationale:** Transforms the application into a publication-ready research workspace while keeping the codebase modular and maintainable.
