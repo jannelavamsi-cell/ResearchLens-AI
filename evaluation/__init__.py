@@ -1,0 +1,3 @@
+"""
+ResearchLens AI Evaluation Harness.
+"""

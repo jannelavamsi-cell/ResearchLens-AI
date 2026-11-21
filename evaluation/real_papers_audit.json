@@ -1,0 +1,297 @@
+[
+  {
+    "index": 1,
+    "filename": "2024.emnlp-industry.13-paper-1.pdf",
+    "paper_id": "71e0e561-74a7-45fd-8290-819155536b91",
+    "title": "PDFTriage:  Question Answering over Long, Structured Documents",
+    "authors": "Jon Saad-Falcon",
+    "year": 2024,
+    "venue": "Unknown",
+    "doi": "None",
+    "total_pages": 17,
+    "total_chunks": 43,
+    "tables_found": 6,
+    "sections": [
+      [
+        "Abstract",
+        1,
+        1
+      ],
+      [
+        "Introduction",
+        1,
+        5
+      ],
+      [
+        "Experiments",
+        5,
+        5
+      ],
+      [
+        "Appendix",
+        5,
+        6
+      ],
+      [
+        "Results",
+        6,
+        6
+      ],
+      [
+        "Future Work",
+        6,
+        7
+      ],
+      [
+        "References",
+        7,
+        7
+      ],
+      [
+        "Methodology",
+        7,
+        17
+      ]
+    ],
+    "raw_hyphen_breaks": 2
+  },
+  {
+    "index": 2,
+    "filename": "research paper-2.pdf",
+    "paper_id": "01f446c4-d786-4f64-8d6c-a8aa53af2cd9",
+    "title": "PDF Retrieval Augmented Question Answering",
+    "authors": "Thi Thu Uyen Hoang, Meenakshi Rajendran, Kun Zhang",
+    "year": 2020,
+    "venue": "Unknown",
+    "doi": "None",
+    "total_pages": 14,
+    "total_chunks": 29,
+    "tables_found": 6,
+    "sections": [
+      [
+        "Introduction",
+        1,
+        1
+      ],
+      [
+        "Abstract",
+        1,
+        2
+      ],
+      [
+        "Related Work",
+        2,
+        2
+      ],
+      [
+        "Methodology",
+        2,
+        6
+      ],
+      [
+        "Experiments",
+        6,
+        7
+      ],
+      [
+        "Results",
+        7,
+        8
+      ],
+      [
+        "Limitations",
+        8,
+        8
+      ],
+      [
+        "Conclusion",
+        8,
+        8
+      ],
+      [
+        "References",
+        8,
+        14
+      ]
+    ],
+    "raw_hyphen_breaks": 0
+  },
+  {
+    "index": 3,
+    "filename": "research paper-3.pdf",
+    "paper_id": "0e166953-ae10-404f-af8b-838ae5dba738",
+    "title": "NeuSym-RAG: Hybrid Neural Symbolic Retrieval with Multiview Structuring for PDF Question Answering",
+    "authors": "Structuring for PDF Question Answering, Ruisheng Cao \u2217 , Hanchong Zhang \u2217 , Tiancheng Huang \u2217 , Zhangyi Kang , Yuxin Zhang ,, Liangtai Sun , Hanqi Li , Yuxun Miao , Shuai Fan , Lu Chen and Kai Yu",
+    "year": 2025,
+    "venue": "Unknown",
+    "doi": "None",
+    "total_pages": 29,
+    "total_chunks": 43,
+    "tables_found": 11,
+    "sections": [
+      [
+        "Abstract",
+        1,
+        1
+      ],
+      [
+        "Introduction",
+        1,
+        5
+      ],
+      [
+        "Experiments",
+        5,
+        6
+      ],
+      [
+        "Methodology",
+        6,
+        7
+      ],
+      [
+        "Conclusion",
+        7,
+        8
+      ],
+      [
+        "Related Work",
+        8,
+        9
+      ],
+      [
+        "Limitations",
+        9,
+        9
+      ],
+      [
+        "References",
+        9,
+        29
+      ]
+    ],
+    "raw_hyphen_breaks": 22
+  },
+  {
+    "index": 4,
+    "filename": "Research paper-4.pdf",
+    "paper_id": "dff9a86e-4ab1-484b-934b-e16f4794c891",
+    "title": "Doc-React:  Multi-page Heterogeneous Document Question-answering",
+    "authors": "Junda Wu , Yu Xia , Tong Yu , Xiang Chen , Sai Sree Harsha ,, Akash V. Maharaj , Ruiyi Zhang , Victor Bursztyn , Sungchul Kim ,, Ryan Rossi , Julian McAuley , Yunyao Li , Ritwik Sinha",
+    "year": 2025,
+    "venue": "Unknown",
+    "doi": "None",
+    "total_pages": 12,
+    "total_chunks": 33,
+    "tables_found": 3,
+    "sections": [
+      [
+        "Abstract",
+        1,
+        1
+      ],
+      [
+        "Introduction",
+        1,
+        2
+      ],
+      [
+        "Related Work",
+        2,
+        4
+      ],
+      [
+        "Appendix",
+        4,
+        4
+      ],
+      [
+        "Methodology",
+        4,
+        4
+      ],
+      [
+        "Experiments",
+        4,
+        5
+      ],
+      [
+        "Conclusion",
+        5,
+        5
+      ],
+      [
+        "Limitations",
+        5,
+        5
+      ],
+      [
+        "References",
+        5,
+        12
+      ]
+    ],
+    "raw_hyphen_breaks": 4
+  },
+  {
+    "index": 5,
+    "filename": "research paper-5.pdf",
+    "paper_id": "51a06bed-5a14-452a-95a8-8fbacc593dc3",
+    "title": "MHier-RAG: Multi-Modal RAG for Visual-Rich Document Question-Answering via Hierarchical and Multi-Granularity Reasoning",
+    "authors": "via Hierarchical and Multi-Granularity Reasoning, Ziyu Gong , Chengcheng Mai , Yihua Huang",
+    "year": null,
+    "venue": "Unknown",
+    "doi": "None",
+    "total_pages": 13,
+    "total_chunks": 54,
+    "tables_found": 3,
+    "sections": [
+      [
+        "Abstract",
+        1,
+        1
+      ],
+      [
+        "Introduction",
+        1,
+        3
+      ],
+      [
+        "Conclusion",
+        3,
+        4
+      ],
+      [
+        "Experiments",
+        4,
+        5
+      ],
+      [
+        "Methodology",
+        5,
+        7
+      ],
+      [
+        "Related Work",
+        7,
+        8
+      ],
+      [
+        "References",
+        8,
+        10
+      ],
+      [
+        "Appendix",
+        10,
+        12
+      ],
+      [
+        "Results",
+        12,
+        13
+      ]
+    ],
+    "raw_hyphen_breaks": 5
+  }
+]

@@ -1,0 +1,77 @@
+[
+  {
+    "id": "Q1_PDFTriage",
+    "question": "How does PDFTriage represent document structure to enable context retrieval for Large Language Models?",
+    "answer": "PDFTriage represents document structure by giving models access to metadata regarding the document's structure [Paper 1, p. 1]. It accomplishes this by augmenting prompts with both document structure metadata and a set of model-callable retrieval functions that operate over various types of structure [Paper 1, p. 1]. For example, it includes the `fetch_pages(pages: list[int])` function, which enables the model to fetch a specific list of pages [Paper 1, p. 1].",
+    "citations": [
+      "[PDFTriage:  Question Answering over Long, Structured Documents, p. 1]",
+      "[PDFTriage:  Question Answering over Long, Structured Documents, p. 1]",
+      "[PDFTriage:  Question Answering over Long, Structured Documents, p. 1]",
+      "[PDFTriage:  Question Answering over Long, Structured Documents, p. 1]",
+      "[PDFTriage:  Question Answering over Long, Structured Documents, p. 5]"
+    ],
+    "support_score": 0.83,
+    "claims_count": 3,
+    "is_insufficient": false
+  },
+  {
+    "id": "Q2_PIER_QA",
+    "question": "What preprocessing algorithms and vision models does PIER-QA use to process non-textual PDF elements?",
+    "answer": "The uploaded papers do not contain sufficient evidence to answer this question. Missing information: The excerpts do not specify the exact vision models used by PIER-QA; they only mention that captions are generated for images and markdown tables are compressed into a dictionary format [Paper 1, p. 3], and headers and footers are removed using the DBSCAN clustering algorithm while documents are converted to markdown using the machine-learning-based tool Marker [Paper 1, p. 3].",
+    "citations": [
+      "[PDF Retrieval Augmented Question Answering, p. 3]",
+      "[PDF Retrieval Augmented Question Answering, p. 7]",
+      "[PDF Retrieval Augmented Question Answering, p. 7]",
+      "[PDF Retrieval Augmented Question Answering, p. 2]",
+      "[PDF Retrieval Augmented Question Answering, p. 7]"
+    ],
+    "support_score": 1.0,
+    "claims_count": 2,
+    "is_insufficient": true
+  },
+  {
+    "id": "Q3_NeuSym_RAG",
+    "question": "What are the three main stages of the NeuSym-RAG framework and what database engine is utilized?",
+    "answer": "The NeuSym-RAG framework comprises three stages:\n1. **Parsing**: Passing the raw PDF file into a pipeline of functions to segment it in multi-view, extract non-textual elements, and store them in a schema-constrained database (DB) [Paper 1, p. 2]. (Note: The remaining specific stages are detailed as part of the overall procedure, but the exact names/steps for the subsequent stages beyond parsing are not fully enumerated under a distinct \"three stages\" list in the text, though the DuckDB database engine is utilized for the schema-constrained database) [Paper 1, p. 2, 21].\n\nThe database engine utilized in the framework is **DuckDB** [Paper 1, p. 21]. \n\n*(Note: The provided excerpts do not explicitly list all three stage names consecutively, other than identifying parsing as the first stage [Paper 1, p. 2], and mentioning the DuckDB database schema [Paper 1, p. 21].)*",
+    "citations": [
+      "[NeuSym-RAG: Hybrid Neural Symbolic Retrieval with Multiview Structuring for PDF Question Answering, p. 2]",
+      "[NeuSym-RAG: Hybrid Neural Symbolic Retrieval with Multiview Structuring for PDF Question Answering, p. 21]",
+      "[NeuSym-RAG: Hybrid Neural Symbolic Retrieval with Multiview Structuring for PDF Question Answering, p. 1]",
+      "[NeuSym-RAG: Hybrid Neural Symbolic Retrieval with Multiview Structuring for PDF Question Answering, p. 1]",
+      "[NeuSym-RAG: Hybrid Neural Symbolic Retrieval with Multiview Structuring for PDF Question Answering, p. 4]"
+    ],
+    "support_score": 0.3,
+    "claims_count": 5,
+    "is_insufficient": false
+  },
+  {
+    "id": "Q4_Multi_Modal_Benchmark",
+    "question": "What common multi-page benchmark dataset is evaluated in both Doc-React and MHier-RAG?",
+    "answer": "The uploaded papers do not contain sufficient evidence to answer this question. Missing information: The excerpts do not mention any common multi-page benchmark dataset evaluated in both Doc-React and MHier-RAG; Doc-React's evaluation datasets are not specified in the provided excerpts.",
+    "citations": [
+      "[MHier-RAG: Multi-Modal RAG for Visual-Rich Document Question-Answering via Hierarchical and Multi-Granularity Reasoning, p. 4]",
+      "[MHier-RAG: Multi-Modal RAG for Visual-Rich Document Question-Answering via Hierarchical and Multi-Granularity Reasoning, p. 10]",
+      "[NeuSym-RAG: Hybrid Neural Symbolic Retrieval with Multiview Structuring for PDF Question Answering, p. 4]",
+      "[Doc-React:  Multi-page Heterogeneous Document Question-answering, p. 2]",
+      "[NeuSym-RAG: Hybrid Neural Symbolic Retrieval with Multiview Structuring for PDF Question Answering, p. 5]"
+    ],
+    "support_score": 1.0,
+    "claims_count": 2,
+    "is_insufficient": true
+  },
+  {
+    "id": "Q5_Unanswerable_Negative",
+    "question": "What quantum annealing schedule, coherence time, and qubit topology was utilized to optimize the neural network parameters?",
+    "answer": "The uploaded papers do not contain sufficient evidence to answer this question. Missing information: details regarding quantum annealing schedules, coherence times, and qubit topologies utilized for optimizing neural network parameters.",
+    "citations": [
+      "[Attention-Based Deep Learning for Medical Document Intelligence, p. 2]",
+      "[NeuSym-RAG: Hybrid Neural Symbolic Retrieval with Multiview Structuring for PDF Question Answering, p. 9]",
+      "[Graph Neural Networks for Scientific Citation Link Prediction, p. 1]",
+      "[Graph Neural Networks for Scientific Citation Link Prediction, p. 1]",
+      "[Graph Neural Networks for Scientific Citation Link Prediction, p. 1]"
+    ],
+    "support_score": 1.0,
+    "claims_count": 2,
+    "is_insufficient": true
+  }
+]

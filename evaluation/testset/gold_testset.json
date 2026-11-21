@@ -1,0 +1,84 @@
+{
+  "extractions": [
+    {
+      "filename": "paper_1_medical_nlp.pdf",
+      "gold_fields": {
+        "objective": "clinical language modeling",
+        "methodology": "transformer encoder",
+        "datasets": "mimic-iii",
+        "algorithms": "clinicalbert",
+        "metrics": "macro f1",
+        "results": "88.4%",
+        "limitations": "computational cost"
+      }
+    },
+    {
+      "filename": "paper_2_citation_gnn.pdf",
+      "gold_fields": {
+        "objective": "graph representation learning",
+        "methodology": "graph convolutional network",
+        "datasets": "cora",
+        "algorithms": "citationgnn",
+        "metrics": "classification accuracy",
+        "results": "84.1%",
+        "limitations": "memory overhead"
+      }
+    },
+    {
+      "filename": "paper_3_hybrid_ir.pdf",
+      "gold_fields": {
+        "objective": "hybrid neural retrieval",
+        "methodology": "reciprocal rank fusion",
+        "datasets": "ms-marco",
+        "algorithms": "hybridir",
+        "metrics": "mrr@10",
+        "results": "0.388",
+        "limitations": "latency overhead"
+      }
+    }
+  ],
+  "retrieval_queries": [
+    {
+      "query": "What dataset is used for clinical diagnostic code evaluation?",
+      "relevant_keywords": ["mimic", "clinical", "diagnostic", "evaluation"],
+      "expected_paper": "paper_1_medical_nlp.pdf"
+    },
+    {
+      "query": "Which model achieves 84.1% accuracy on CORA citation topology?",
+      "relevant_keywords": ["cora", "citationgnn", "84.1", "graph"],
+      "expected_paper": "paper_2_citation_gnn.pdf"
+    },
+    {
+      "query": "What is the MRR@10 score achieved on MS-MARCO?",
+      "relevant_keywords": ["mrr@10", "ms-marco", "0.388", "hybrid"],
+      "expected_paper": "paper_3_hybrid_ir.pdf"
+    },
+    {
+      "query": "What are the computational GPU memory limitations of ClinicalBERT?",
+      "relevant_keywords": ["computational", "cost", "gpu", "limitation"],
+      "expected_paper": "paper_1_medical_nlp.pdf"
+    }
+  ],
+  "rag_questions": [
+    {
+      "question": "What is the Macro F1 score of ClinicalBERT and what dataset was used?",
+      "expected_answer_contains": ["88.4%", "MIMIC-III"],
+      "expected_citations": ["Paper 1", "p. 1"]
+    },
+    {
+      "question": "How does CitationGNN aggregate information across citation graphs?",
+      "expected_answer_contains": ["graph convolutional", "CORA"],
+      "expected_citations": ["Paper 2"]
+    },
+    {
+      "question": "What are the primary author-declared limitations of HybridIR?",
+      "expected_answer_contains": ["latency", "overhead"],
+      "expected_citations": ["Paper 3"]
+    },
+    {
+      "question": "What is the quantum speedup achieved for protein folding?",
+      "expected_answer_contains": ["do not contain sufficient evidence"],
+      "is_insufficient": true
+    }
+  ]
+}

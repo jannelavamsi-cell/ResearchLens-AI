@@ -1,0 +1,70 @@
+{
+  "filename": "paper_1_medical_nlp.pdf",
+  "gold_fields": {
+    "objective": "FILL_ME",
+    "methodology": "FILL_ME",
+    "datasets": "FILL_ME",
+    "algorithms": "FILL_ME",
+    "metrics": "FILL_ME",
+    "results": "FILL_ME",
+    "limitations": "FILL_ME",
+    "future_work": "FILL_ME"
+  },
+  "evidence_quotes": {
+    "objective": {
+      "quote": "FILL_VERBATIM_QUOTE",
+      "page": 1
+    },
+    "methodology": {
+      "quote": "FILL_VERBATIM_QUOTE",
+      "page": 1
+    },
+    "datasets": {
+      "quote": "FILL_VERBATIM_QUOTE",
+      "page": 1
+    },
+    "algorithms": {
+      "quote": "FILL_VERBATIM_QUOTE",
+      "page": 1
+    },
+    "metrics": {
+      "quote": "FILL_VERBATIM_QUOTE",
+      "page": 1
+    },
+    "results": {
+      "quote": "FILL_VERBATIM_QUOTE",
+      "page": 1
+    },
+    "limitations": {
+      "quote": "FILL_VERBATIM_QUOTE",
+      "page": 1
+    },
+    "future_work": {
+      "quote": "FILL_VERBATIM_QUOTE",
+      "page": 1
+    }
+  },
+  "retrieval_queries": [
+    {
+      "query": "FILL_SEARCH_QUERY_HERE",
+      "relevant_keywords": [
+        "keyword1",
+        "keyword2"
+      ],
+      "expected_paper": "paper_1_medical_nlp.pdf"
+    }
+  ],
+  "rag_questions": [
+    {
+      "question": "FILL_RAG_QUESTION_HERE",
+      "expected_answer_contains": [
+        "key_fact_1",
+        "key_fact_2"
+      ],
+      "expected_citations": [
+        "paper_1_medical_nlp.pdf, p. 1"
+      ],
+      "is_insufficient": false
+    }
+  ]
+}

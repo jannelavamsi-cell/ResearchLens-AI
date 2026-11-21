@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# Environment and sensitive files
+.env
+*.pem
+*.key
+.streamlit/secrets.toml
+
+# Data directories and artifacts
+data/*
+!data/.gitkeep
+*.db
+*.sqlite*
+*.faiss
+*.pdf
+
+# Model caches
+models/
+.cache/
+huggingface/
+
+# Test, lint, and coverage
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Logs
+logs/*.log
+
+# IDE & OS Junk
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
