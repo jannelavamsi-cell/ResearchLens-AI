@@ -3,31 +3,33 @@
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Streamlit App](https://img.shields.io/badge/Streamlit-1.38+-FF4B4B.svg)](https://streamlit.io)
-[![Test Suite](https://img.shields.io/badge/pytest-55%20passed-brightgreen.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-80%25-green.svg)](tests/)
+[![Test Suite](https://img.shields.io/badge/pytest-56%20passed-brightgreen.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-82%25-green.svg)](tests/)
 [![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-ResearchLens AI is a college-level, fully reproducible document intelligence system engineered for academic literature research. Users upload multi-page research-paper PDFs to automatically extract structured research components, run hybrid semantic search, perform grounded conversational QA with verifiable page citations, generate faithful cross-paper comparison matrices, discover author-declared research gaps, and synthesize structured literature reviews.
+ResearchLens AI is a modern, college-level, and production-grade document intelligence system engineered for academic literature research and multi-paper comparative analysis. Built with an AI-SaaS presentation layer, it lets researchers upload multi-page research PDFs to automatically extract structured research components, run hybrid semantic search, perform grounded conversational QA with verifiable page citations, generate faithful cross-paper comparison matrices, discover author-declared research gaps, and synthesize structured literature reviews.
 
 **Core Principle: Grounded, Verifiable Output.** Every extracted component, answer sentence, and comparative claim is tied to physical 1-indexed page citations and verified against source text using token-level fuzzy matching and an automated verification judge.
 
 ---
 
-## 📸 Visual Tour & Shipped Interface
+## 📸 Visual Tour & Modern AI-SaaS Interface
 
 | Page / Capability | Interface Preview |
 |---|---|
-| **0. Home & Workspace** | ![Home Overview](docs/ui_screenshots/00_home.png) |
-| **1. Paper Upload & Processing** | ![Upload Screen](docs/ui_screenshots/01_paper_upload.png) |
-| **2. Structured Extraction & Evidence** | ![Structured Components](docs/ui_screenshots/02_paper_analysis_components.png) |
-| **2. Normalized Results Tables** | ![Results Tables](docs/ui_screenshots/02_paper_analysis_tables.png) |
-| **3. Smart Hybrid Search (RRF + Rerank)** | ![Smart Search](docs/ui_screenshots/03_smart_search.png) |
-| **4. Grounded Research Chat (RAG)** | ![Grounded Chat](docs/ui_screenshots/04_research_chat.png) |
-| **5. Cross-Paper Comparison Matrix** | ![Comparison Matrix](docs/ui_screenshots/05_paper_comparison.png) |
-| **6. Synthesized Literature Review** | ![Literature Review](docs/ui_screenshots/06_literature_review.png) |
-| **7. Research Gap Discovery** | ![Research Gaps](docs/ui_screenshots/07_research_gaps.png) |
-| **8. Trends & Academic Export Center** | ![Trends & Export](docs/ui_screenshots/08_trends_and_export.png) |
+| **0. Interactive Dashboard (Light Mode)** | ![Dashboard Light](assets/screenshots/00_dashboard_saas.png) |
+| **0. Interactive Dashboard (Dark Mode)** | ![Dashboard Dark](assets/screenshots/00_dashboard_saas_dark.png) |
+| **1. PDF Upload & Multi-Stage Processing** | ![PDF Upload](assets/screenshots/01_paper_upload.png) |
+| **2. Paper Analysis & Grounded Components** | ![Paper Analysis](assets/screenshots/02_paper_analysis.png) |
+| **2b. Dedicated Keyword Extraction Hub** | ![Keyword Extraction](assets/screenshots/02b_keyword_extraction.png) |
+| **3. Smart Hybrid Search (FAISS + BM25 + RRF)** | ![Smart Search](assets/screenshots/03_smart_search.png) |
+| **4. Grounded Research Chat Assistant** | ![Research Chat](assets/screenshots/04_research_chat.png) |
+| **5. Cross-Paper Comparison & Benchmark Guard** | ![Paper Comparison](assets/screenshots/05_paper_comparison.png) |
+| **6. Academic Literature Review Draft** | ![Literature Review](assets/screenshots/06_literature_review.png) |
+| **7. Research Gaps & Thesis Proposal Mining** | ![Research Gaps](assets/screenshots/07_research_gaps.png) |
+| **8. Research Trends & Unified Export Center** | ![Trends & Export](assets/screenshots/08_trends_and_export.png) |
+| **9. System Settings & Live Health Diagnostics** | ![Settings](assets/screenshots/09_settings.png) |
 
 ---
 
