@@ -185,3 +185,50 @@ def test_schema_version_and_migrations(temp_db):
     assert "header" not in migrated_data
     assert "page" not in migrated_data
 
+
+def test_get_collection_stats(temp_db):
+    """Tests aggregate collection metrics calculation."""
+    cid = temp_db.create_collection("Stats Collection")
+    empty_stats = temp_db.get_collection_stats(cid)
+    assert empty_stats["papers_count"] == 0
+    assert empty_stats["pages_count"] == 0
+    assert empty_stats["chunks_count"] == 0
+    assert empty_stats["keywords_count"] == 0
+    assert empty_stats["extractions_count"] == 0
+    assert empty_stats["verified_extractions"] == 0
+    assert empty_stats["unverified_extractions"] == 0
+    assert empty_stats["tables_count"] == 0
+    assert empty_stats["chat_questions"] == 0
+
+    # Add a paper and verify stats update
+    pid = temp_db.insert_paper(
+        collection_id=cid,
+        file_hash="hash999",
+        filename="stats_paper.pdf",
+        file_path="stats_paper.pdf",
+        title="Stats Paper",
+        n_pages=10,
+    )
+    temp_db.update_paper_status(pid, "ready")
+    temp_db.insert_chunks([
+        {"id": "c1", "paper_id": pid, "chunk_index": 0, "page_start": 1, "page_end": 1, "section_name": "Abstract", "text": "text", "token_count": 5}
+    ])
+    temp_db.insert_keywords(pid, [{"keyword": "stats", "score": 0.9, "method": "keybert"}])
+    temp_db.insert_or_update_extraction(pid, ExtractedField(field_name="objective", value="Test stats", evidence_quote="Test", page=1, confidence=1.0, verified=True))
+    temp_db.insert_or_update_extraction(pid, ExtractedField(field_name="limitations", value="Limited data", evidence_quote="", page=0, confidence=0.5, verified=False))
+    sess_id = temp_db.create_chat_session(cid, "Test Chat")
+    temp_db.insert_chat_message(sess_id, "user", "What is the objective?")
+
+    updated_stats = temp_db.get_collection_stats(cid)
+    assert updated_stats["papers_count"] == 1
+    assert updated_stats["pages_count"] == 10
+    assert updated_stats["ready_papers"] == 1
+    assert updated_stats["chunks_count"] == 1
+    assert updated_stats["keywords_count"] == 1
+    assert updated_stats["extractions_count"] == 2
+    assert updated_stats["verified_extractions"] == 1
+    assert updated_stats["unverified_extractions"] == 1
+    assert updated_stats["chat_questions"] == 1
+    assert len(updated_stats["recent_papers"]) == 1
+    assert len(updated_stats["recent_questions"]) == 1
+

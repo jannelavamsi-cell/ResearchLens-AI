@@ -1,5 +1,5 @@
 [theme]
-primaryColor = "#2563EB"
+primaryColor = "#4F46E5"
 backgroundColor = "#F8FAFC"
 secondaryBackgroundColor = "#FFFFFF"
 textColor = "#0F172A"
@@ -10,3 +10,6 @@ headless = true
 enableCORS = false
 enableXsrfProtection = false
 maxUploadSize = 50
+
+[client]
+toolbarMode = "minimal"

@@ -155,6 +155,117 @@ class DBManager:
             cursor = conn.execute("DELETE FROM collections WHERE id = ?", (collection_id,))
             return cursor.rowcount > 0
 
+    def get_collection_stats(self, collection_id: str) -> Dict[str, Any]:
+        """Returns aggregate metrics and recent activity for an active workspace collection."""
+        with self.get_connection() as conn:
+            p_cur = conn.execute(
+                "SELECT COUNT(*), COALESCE(SUM(n_pages), 0) FROM papers WHERE collection_id = ?",
+                (collection_id,),
+            )
+            p_row = p_cur.fetchone()
+            papers_count = p_row[0] if p_row else 0
+            pages_count = p_row[1] if p_row else 0
+
+            r_cur = conn.execute(
+                "SELECT COUNT(*) FROM papers WHERE collection_id = ? AND status = 'ready'",
+                (collection_id,),
+            )
+            ready_papers = r_cur.fetchone()[0]
+
+            c_cur = conn.execute(
+                """
+                SELECT COUNT(*) FROM chunks c
+                JOIN papers p ON c.paper_id = p.id
+                WHERE p.collection_id = ?
+                """,
+                (collection_id,),
+            )
+            chunks_count = c_cur.fetchone()[0]
+
+            k_cur = conn.execute(
+                """
+                SELECT COUNT(*) FROM keywords k
+                JOIN papers p ON k.paper_id = p.id
+                WHERE p.collection_id = ?
+                """,
+                (collection_id,),
+            )
+            keywords_count = k_cur.fetchone()[0]
+
+            e_cur = conn.execute(
+                """
+                SELECT
+                    COUNT(*),
+                    COALESCE(SUM(CASE WHEN e.verified = 1 THEN 1 ELSE 0 END), 0),
+                    COALESCE(SUM(CASE WHEN e.verified = 0 THEN 1 ELSE 0 END), 0)
+                FROM extractions e
+                JOIN papers p ON e.paper_id = p.id
+                WHERE p.collection_id = ?
+                """,
+                (collection_id,),
+            )
+            e_row = e_cur.fetchone()
+            extractions_count = e_row[0] if e_row else 0
+            verified_extractions = e_row[1] if e_row else 0
+            unverified_extractions = e_row[2] if e_row else 0
+
+            t_cur = conn.execute(
+                """
+                SELECT COUNT(*) FROM results_tables t
+                JOIN papers p ON t.paper_id = p.id
+                WHERE p.collection_id = ?
+                """,
+                (collection_id,),
+            )
+            tables_count = t_cur.fetchone()[0]
+
+            q_cur = conn.execute(
+                """
+                SELECT COUNT(*) FROM chat_messages m
+                JOIN chat_sessions s ON m.session_id = s.id
+                WHERE s.collection_id = ? AND m.role = 'user'
+                """,
+                (collection_id,),
+            )
+            chat_questions = q_cur.fetchone()[0]
+
+            rec_p_cur = conn.execute(
+                """
+                SELECT id, title, filename, authors, year, n_pages, status, created_at
+                FROM papers WHERE collection_id = ?
+                ORDER BY created_at DESC LIMIT 4
+                """,
+                (collection_id,),
+            )
+            recent_papers = [dict(r) for r in rec_p_cur.fetchall()]
+
+            rec_q_cur = conn.execute(
+                """
+                SELECT m.content, m.created_at, s.title as session_title
+                FROM chat_messages m
+                JOIN chat_sessions s ON m.session_id = s.id
+                WHERE s.collection_id = ? AND m.role = 'user'
+                ORDER BY m.created_at DESC LIMIT 4
+                """,
+                (collection_id,),
+            )
+            recent_questions = [dict(r) for r in rec_q_cur.fetchall()]
+
+            return {
+                "papers_count": papers_count,
+                "pages_count": pages_count,
+                "ready_papers": ready_papers,
+                "chunks_count": chunks_count,
+                "keywords_count": keywords_count,
+                "extractions_count": extractions_count,
+                "verified_extractions": verified_extractions,
+                "unverified_extractions": unverified_extractions,
+                "tables_count": tables_count,
+                "chat_questions": chat_questions,
+                "recent_papers": recent_papers,
+                "recent_questions": recent_questions,
+            }
+
     # -----------------------------------------------------------------------
     # Papers Operations
     # -----------------------------------------------------------------------
