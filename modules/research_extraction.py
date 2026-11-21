@@ -7,9 +7,11 @@ and verifies quotes against page text using fuzzy matching.
 import json
 import logging
 import re
-from typing import Dict
+from typing import Dict, List
 
+import spacy
 from rapidfuzz import fuzz
+from spacy.matcher import Matcher
 
 from core.llm import get_llm_client
 from core.llm.prompts import EXTRACTION_SYSTEM_PROMPT
@@ -17,6 +19,94 @@ from core.schemas import ExtractedField, StructuredPaperExtraction
 from database.db_manager import DatabaseManager
 
 logger = logging.getLogger("researchlens.extraction")
+
+_spacy_nlp_extract = None
+
+
+def get_spacy_nlp_extract():
+    """Lazy loader for spaCy pipeline in extraction module."""
+    global _spacy_nlp_extract
+    if _spacy_nlp_extract is None:
+        try:
+            _spacy_nlp_extract = spacy.load("en_core_web_sm")
+        except Exception:
+            _spacy_nlp_extract = spacy.blank("en")
+    return _spacy_nlp_extract
+
+
+def extract_scientific_entities(text: str) -> Dict[str, List[str]]:
+    """
+    Extracts structured scientific entities (metrics, benchmarks, architectures)
+    from text using rule-based spaCy pattern matching.
+    """
+    if not text:
+        return {"metrics": [], "architectures": [], "datasets": []}
+    nlp = get_spacy_nlp_extract()
+    doc = nlp(text[:12000])
+    matcher = Matcher(nlp.vocab)
+
+    metric_patterns = [
+        [
+            {
+                "LOWER": {
+                    "IN": [
+                        "accuracy", "acc", "f1", "precision", "recall", "bleu",
+                        "rouge", "auc", "map", "ndcg", "mrr", "loss", "perplexity"
+                    ]
+                }
+            }
+        ],
+        [{"LOWER": "exact"}, {"LOWER": "match"}],
+        [{"LOWER": "top"}, {"LOWER": "-"}, {"IS_DIGIT": True}],
+    ]
+    matcher.add("METRIC", metric_patterns)
+
+    arch_patterns = [
+        [
+            {
+                "LOWER": {
+                    "IN": [
+                        "transformer", "bert", "roberta", "llama", "gpt", "resnet",
+                        "gnn", "lstm", "rag", "t5", "mistral", "autoencoder"
+                    ]
+                }
+            }
+        ],
+        [{"IS_TITLE": True}, {"LOWER": "net"}],
+    ]
+    matcher.add("ARCHITECTURE", arch_patterns)
+
+    dataset_patterns = [
+        [
+            {
+                "LOWER": {
+                    "IN": [
+                        "glue", "superglue", "squad", "imagenet", "retrievalqa",
+                        "mmlongbench", "hotpotqa", "triviaqa", "pubmed", "coqa"
+                    ]
+                }
+            }
+        ],
+        [
+            {"IS_UPPER": True, "LENGTH": {">=": 3}},
+            {"LOWER": {"IN": ["dataset", "benchmark", "corpus"]}},
+        ],
+    ]
+    matcher.add("DATASET", dataset_patterns)
+
+    matches = matcher(doc)
+    results: Dict[str, List[str]] = {"metrics": [], "architectures": [], "datasets": []}
+    seen = set()
+
+    for match_id, start, end in matches:
+        span_text = doc[start:end].text.strip()
+        label = nlp.vocab.strings[match_id]
+        key = label.lower() + "s"
+        if key in results and span_text.lower() not in seen:
+            seen.add(span_text.lower())
+            results[key].append(span_text)
+
+    return results
 
 CORE_FIELDS = [
     "objective",

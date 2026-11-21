@@ -17,6 +17,14 @@ def test_classify_heading_line():
     assert classify_heading_line("7. Conclusion") == "Conclusion"
     assert classify_heading_line("References") == "References"
 
+    # Roman numerals and multi-level numbering
+    assert classify_heading_line("III. METHODOLOGY") == "Methodology"
+    assert classify_heading_line("IV. EMPIRICAL EVALUATION") == "Experiments"
+    assert classify_heading_line("3.1 Proposed Framework") == "Methodology"
+    assert classify_heading_line("4.2 Quantitative Results") == "Results"
+    assert classify_heading_line("Section 5: Threats to Validity") == "Limitations"
+    assert classify_heading_line("Background and Context") == "Related Work"
+
     # Non-heading line
     assert classify_heading_line("This sentence mentions attention mechanisms.") is None
 

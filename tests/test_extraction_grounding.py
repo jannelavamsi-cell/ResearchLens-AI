@@ -261,3 +261,44 @@ def test_normalize_table_dict_malformed():
     assert normalized["headers"] == []
     assert normalized["caption"] == ""
 
+
+def test_table_validation_and_semantics():
+    from modules.results_tables import is_valid_table, parse_table_semantics
+
+    # Invalid tables: empty, single-cell layout artifacts
+    assert is_valid_table([], []) is False
+    assert is_valid_table(["Single"], [["Cell"]]) is False
+    assert is_valid_table(["Header"], []) is False
+
+    # Valid table
+    headers = ["Model", "Accuracy", "F1 Score"]
+    rows = [["BERT", "85.2", "83.1"], ["RoBERTa", "88.7", "87.4"]]
+    assert is_valid_table(headers, rows) is True
+
+    # Parse semantics
+    semantics = parse_table_semantics(headers, rows, caption="Evaluation on SQuAD benchmark")
+    assert semantics["model_column"]["name"] == "Model"
+    metric_names = [m["name"] for m in semantics["metric_columns"]]
+    assert "Accuracy" in metric_names
+    assert "F1 Score" in metric_names
+    assert "SQUAD" in semantics["detected_benchmarks"]
+
+
+def test_scientific_entity_matcher():
+    from modules.research_extraction import extract_scientific_entities
+
+    sample_text = (
+        "We evaluate ClinicalBERT using Transformer encoders against baseline GNN models. "
+        "The evaluation is conducted on the SQuAD benchmark and HotpotQA dataset, "
+        "measuring Accuracy, Macro F1, and exact match metrics."
+    )
+    entities = extract_scientific_entities(sample_text)
+    metrics_lower = [m.lower() for m in entities["metrics"]]
+    archs_lower = [a.lower() for a in entities["architectures"]]
+    datasets_lower = [d.lower() for d in entities["datasets"]]
+
+    assert "accuracy" in metrics_lower or "f1" in metrics_lower
+    assert "transformer" in archs_lower or "gnn" in archs_lower
+    assert "squad" in datasets_lower or "hotpotqa" in datasets_lower
+
+

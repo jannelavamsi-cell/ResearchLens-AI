@@ -25,56 +25,73 @@ CANONICAL_SECTIONS = [
     "Appendix",
 ]
 
+# Regex prefix for section numbering (handles '1.', '1.1', 'Section 1:', 'III.', 'IV -', etc.)
+NUM_PREFIX = r"^(?:(?:section\s+)?(?:\d+(?:\.\d+)*|[ivxlcdm]+)[\.\s\:\-]+)?\s*"
+
 # Regex patterns mapping variations to canonical names
 SECTION_PATTERNS: Dict[str, List[re.Pattern]] = {
     "Abstract": [
         re.compile(r"^(abstract)\b", re.IGNORECASE),
     ],
     "Introduction": [
-        re.compile(r"^(\d+[\.\s]+)?(introduction)\b", re.IGNORECASE),
-        re.compile(r"^(\d+[\.\s]+)?(overview)\b", re.IGNORECASE),
+        re.compile(NUM_PREFIX + r"(introduction|overview)\b", re.IGNORECASE),
     ],
     "Related Work": [
         re.compile(
-            r"^(\d+[\.\s]+)?(related\s+work|prior\s+work|literature\s+review)\b", re.IGNORECASE
+            NUM_PREFIX + r"(related\s+work|prior\s+work|literature\s+review|background|state\s+of\s+the\s+art|context)\b",
+            re.IGNORECASE,
         ),
-        re.compile(r"^(\d+[\.\s]+)?(background)\b", re.IGNORECASE),
     ],
     "Methodology": [
         re.compile(
-            r"^(\d+[\.\s]+)?(methodology|methods|proposed\s+method|our\s+approach|architecture|system\s+design|model)\b",
+            NUM_PREFIX
+            + r"(?:(?:proposed|our)\s+)?(methodology|methods|method|approach|architecture|system\s+design|model\s+formulation|framework|algorithmic\s+approach|implementation\s+details|model)\b",
             re.IGNORECASE,
         ),
     ],
     "Experiments": [
         re.compile(
-            r"^(\d+[\.\s]+)?(experiments|experimental\s+setup|evaluation|empirical\s+evaluation)\b",
+            NUM_PREFIX
+            + r"(experiments|experimental\s+setup|experimental\s+design|evaluation\s+setup|empirical\s+evaluation|empirical\s+study|benchmark\s+setup|datasets\s+and\s+metrics)\b",
             re.IGNORECASE,
         ),
     ],
     "Results": [
         re.compile(
-            r"^(\d+[\.\s]+)?(results|experimental\s+results|findings|quantitative\s+results)\b",
+            NUM_PREFIX
+            + r"(results|experimental\s+results|findings|quantitative\s+results|empirical\s+results|comparative\s+evaluation|performance\s+analysis|main\s+results)\b",
             re.IGNORECASE,
         ),
     ],
     "Discussion": [
-        re.compile(r"^(\d+[\.\s]+)?(discussion|analysis)\b", re.IGNORECASE),
+        re.compile(
+            NUM_PREFIX + r"(discussion|analysis|qualitative\s+analysis|ablation\s+study|ablations|case\s+study|error\s+analysis)\b",
+            re.IGNORECASE,
+        ),
     ],
     "Limitations": [
-        re.compile(r"^(\d+[\.\s]+)?(limitations|threats\s+to\s+validity)\b", re.IGNORECASE),
+        re.compile(
+            NUM_PREFIX + r"(limitations|threats\s+to\s+validity|broader\s+impact\s+and\s+limitations|ethical\s+considerations)\b",
+            re.IGNORECASE,
+        ),
     ],
     "Future Work": [
-        re.compile(r"^(\d+[\.\s]+)?(future\s+work|future\s+directions)\b", re.IGNORECASE),
+        re.compile(
+            NUM_PREFIX + r"(future\s+work|future\s+directions|open\s+problems|future\s+research)\b",
+            re.IGNORECASE,
+        ),
     ],
     "Conclusion": [
-        re.compile(r"^(\d+[\.\s]+)?(conclusion|concluding\s+remarks|summary)\b", re.IGNORECASE),
+        re.compile(
+            NUM_PREFIX + r"(conclusion|concluding\s+remarks|summary\s+and\s+conclusions|conclusions|summary)\b",
+            re.IGNORECASE,
+        ),
     ],
     "References": [
         re.compile(r"^(references|bibliography|literature\s+cited)\b", re.IGNORECASE),
     ],
     "Appendix": [
-        re.compile(r"^(\d+[\.\s]+)?(appendix|appendices)\b", re.IGNORECASE),
+        re.compile(NUM_PREFIX + r"(appendix|appendices|supplementary\s+material)\b", re.IGNORECASE),
     ],
 }
 

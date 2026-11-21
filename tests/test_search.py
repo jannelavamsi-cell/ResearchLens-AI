@@ -125,14 +125,19 @@ def test_faiss_semantic_search(sample_chunks):
 
 
 def test_keyword_extraction():
-    """Tests keyword extraction merging KeyBERT, TF-IDF, and spaCy terms."""
+    """Tests keyword extraction merging KeyBERT, TF-IDF, and spaCy terms with stoplist."""
     text = (
         "MedLens-Transformer introduces a multi-head self-attention mechanism tailored for clinical "
-        "electronic health records and medical document intelligence. The model outperforms ClinicalBERT."
+        "electronic health records and medical document intelligence. The model outperforms ClinicalBERT. "
+        "This paper presents our approach, experimental results, and evaluated datasets in detail."
     )
-    extractor = KeywordExtractor(top_n=5)
+    extractor = KeywordExtractor(top_n=8)
     keywords = extractor.extract_paper_keywords(text)
 
     assert len(keywords) > 0
     kw_names = [k["keyword"] for k in keywords]
     assert any("attention" in k or "clinical" in k or "medlens" in k for k in kw_names)
+
+    # Ensure ubiquitous academic stopwords are not returned as standalone keywords
+    generic_stops = {"paper", "approach", "results", "datasets"}
+    assert not any(k in generic_stops for k in kw_names)

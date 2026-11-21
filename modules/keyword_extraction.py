@@ -4,7 +4,7 @@ Combines KeyBERT (with MMR diversity), TF-IDF across the collection,
 and spaCy noun chunk / technical terminology extraction.
 """
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 import spacy
 from keybert import KeyBERT
@@ -13,6 +13,17 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from core.logging_config import get_logger
 
 logger = get_logger("keyword_extraction")
+
+# Domain stopwords that frequently dominate academic text but carry minimal conceptual specificity
+ACADEMIC_DOMAIN_STOPWORDS: Set[str] = {
+    "paper", "approach", "model", "models", "results", "method", "methods",
+    "dataset", "datasets", "proposed", "work", "author", "authors", "study",
+    "table", "figure", "section", "et", "al", "using", "based", "evaluation",
+    "experiments", "experimental", "shown", "shows", "performance", "state",
+    "art", "different", "number", "task", "tasks", "findings", "analysis",
+    "data", "technique", "techniques", "system", "systems", "result", "compare",
+    "baseline", "baselines", "present", "presents", "presented"
+}
 
 _nlp = None
 _keybert_model = None
@@ -44,7 +55,7 @@ class KeywordExtractor:
         self.top_n = top_n
 
     def extract_spacy_terms(self, text: str, max_terms: int = 20) -> List[Tuple[str, float]]:
-        """Extracts noun chunks and technical entities filtered by length."""
+        """Extracts noun chunks and technical entities filtered by length and academic stoplist."""
         nlp = get_spacy_nlp()
         doc = nlp(text[:10000])  # Sample first 10,000 characters for speed
 
@@ -57,25 +68,37 @@ class KeywordExtractor:
                 clean = chunk.text.lower().strip()
                 # Exclude stopwords, single letters, and long strings
                 if 3 <= len(clean) <= 40 and len(clean.split()) <= 3 and clean not in seen:
+                    words = set(clean.split())
+                    # Skip if all words in chunk are generic academic stopwords
+                    if words.issubset(ACADEMIC_DOMAIN_STOPWORDS):
+                        continue
                     seen.add(clean)
                     candidates.append((clean, 0.5))
 
         return candidates[:max_terms]
 
     def extract_keybert_terms(self, text: str, max_terms: int = 15) -> List[Tuple[str, float]]:
-        """Extracts diverse keyphrases using KeyBERT with Maximal Marginal Relevance (MMR)."""
+        """Extracts diverse keyphrases across unigrams, bigrams, and trigrams using KeyBERT (MMR)."""
         try:
             kb = get_keybert()
-            # Use MMR for diversity
-            keywords = kb.extract_keywords(
+            # Use MMR for diversity across n-grams (1 to 3)
+            raw_keywords = kb.extract_keywords(
                 text[:15000],
-                keyphrase_ngram_range=(1, 2),
+                keyphrase_ngram_range=(1, 3),
                 stop_words="english",
                 use_mmr=True,
                 diversity=0.7,
-                top_n=max_terms,
+                top_n=max_terms * 2,
             )
-            return keywords
+            filtered = []
+            for phrase, score in raw_keywords:
+                clean_phrase = phrase.lower().strip()
+                words = set(clean_phrase.split())
+                if not words.issubset(ACADEMIC_DOMAIN_STOPWORDS) and len(clean_phrase) >= 3:
+                    filtered.append((clean_phrase, score))
+                if len(filtered) >= max_terms:
+                    break
+            return filtered
         except Exception as e:
             logger.warning(f"KeyBERT extraction fallback: {e}")
             return []
@@ -89,22 +112,29 @@ class KeywordExtractor:
             return []
 
         try:
+            from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+
+            combined_stopwords = list(ENGLISH_STOP_WORDS.union(ACADEMIC_DOMAIN_STOPWORDS))
             vec = TfidfVectorizer(
-                stop_words="english",
-                ngram_range=(1, 2),
-                max_features=200,
+                stop_words=combined_stopwords,
+                ngram_range=(1, 3),
+                max_features=250,
             )
             tfidf_mat = vec.fit_transform(all_docs)
             feature_names = vec.get_feature_names_out()
 
             # Target doc is index 0
             scores = tfidf_mat[0].toarray()[0]
-            top_indices = scores.argsort()[::-1][:max_terms]
+            top_indices = scores.argsort()[::-1][:max_terms * 2]
 
             results = []
             for idx in top_indices:
                 if scores[idx] > 0.0:
-                    results.append((feature_names[idx], float(scores[idx])))
+                    term = feature_names[idx]
+                    if len(term) >= 3 and not set(term.split()).issubset(ACADEMIC_DOMAIN_STOPWORDS):
+                        results.append((term, float(scores[idx])))
+                if len(results) >= max_terms:
+                    break
             return results
         except Exception as e:
             logger.debug(f"TF-IDF extraction error: {e}")

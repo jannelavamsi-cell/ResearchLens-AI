@@ -16,32 +16,119 @@ from database.db_manager import DatabaseManager
 logger = logging.getLogger("researchlens.tables")
 
 
+def is_valid_table(headers: List[str], rows: List[List[Any]]) -> bool:
+    """
+    Checks if tabular data has a meaningful structural shape.
+    Rejects single-cell artifacts, 1-row metadata blocks, and empty grids.
+    """
+    if not rows or not isinstance(rows, list):
+        return False
+    # At least one non-empty row
+    valid_rows = [r for r in rows if isinstance(r, list) and any(str(c).strip() for c in r)]
+    if not valid_rows:
+        return False
+    # Total cells across headers and valid rows must be >= 4 to constitute a genuine table
+    total_cells = len(headers) + sum(len(r) for r in valid_rows)
+    return total_cells >= 4
+
+
 def is_likely_results_table(headers: List[str], rows: List[List[str]]) -> bool:
     """
     Checks if an extracted table appears to be an empirical results / evaluation table
     based on metric and model keywords in headers and numerical entries.
+    Filters out layout blocks, text-only glossaries, and single-cell artifacts.
     """
-    keywords = [
-        "model", "method", "dataset", "accuracy", "acc", "f1", "precision", "recall",
-        "bleu", "rouge", "auc", "map", "ndcg", "mrr", "loss", "score", "error", "latency",
-        "parameters", "params", "time", "%", "std", "baseline", "ours", "proposed"
+    if not is_valid_table(headers, rows):
+        return False
+
+    metric_keywords = [
+        "accuracy", "acc", "f1", "precision", "recall", "bleu", "rouge", "auc",
+        "map", "ndcg", "mrr", "loss", "error", "latency", "throughput", "p@1",
+        "em", "exact match", "perplexity", "top-1", "top-5", "runtime", "%", "score"
+    ]
+    model_keywords = [
+        "model", "method", "approach", "baseline", "ours", "proposed", "system",
+        "architecture", "variant", "framework"
     ]
     header_str = " ".join([str(h).lower() for h in headers if h])
 
-    # Check if header contains any relevant keywords
-    has_keyword = any(k in header_str for k in keywords)
+    has_metric_header = any(k in header_str for k in metric_keywords)
+    has_model_header = any(k in header_str for k in model_keywords)
 
-    # Check if table has numerical content
-    has_numbers = False
+    # Check for numerical density in table body
+    numeric_cell_count = 0
+    total_cell_count = 0
     for row in rows:
-        for cell in row:
-            if cell and any(ch.isdigit() for ch in str(cell)):
-                has_numbers = True
-                break
-        if has_numbers:
-            break
+        if isinstance(row, list):
+            for cell in row:
+                cell_str = str(cell).strip()
+                if cell_str:
+                    total_cell_count += 1
+                    # Match floating point, integer, or percentage
+                    if any(ch.isdigit() for ch in cell_str):
+                        numeric_cell_count += 1
 
-    return has_keyword or has_numbers
+    if total_cell_count == 0:
+        return False
+
+    numeric_ratio = numeric_cell_count / total_cell_count
+
+    # Empirical results tables generally contain both metric/model indicators and significant numbers
+    if (has_metric_header or has_model_header) and numeric_cell_count >= 2:
+        return True
+    if numeric_ratio >= 0.35 and numeric_cell_count >= 3:
+        return True
+
+    return False
+
+
+def parse_table_semantics(
+    headers: List[str],
+    rows: List[List[Any]],
+    caption: str = "",
+) -> Dict[str, Any]:
+    """
+    Heuristically extracts experimental semantics from a results table:
+    - metric_columns: columns measuring performance (e.g. Accuracy, F1)
+    - model_column: column identifying architectures / approaches
+    - detected_benchmarks: datasets or benchmarks identified in headers or caption
+    """
+    metric_terms = {
+        "accuracy", "acc", "f1", "precision", "recall", "bleu", "rouge",
+        "auc", "map", "ndcg", "mrr", "loss", "error", "latency", "em", "score"
+    }
+    model_terms = {"model", "method", "approach", "baseline", "system", "architecture"}
+
+    metric_cols = []
+    model_col = None
+
+    for idx, h in enumerate(headers):
+        h_clean = str(h).lower().strip()
+        if any(m in h_clean for m in metric_terms):
+            metric_cols.append({"index": idx, "name": h})
+        if model_col is None and any(m in h_clean for m in model_terms):
+            model_col = {"index": idx, "name": h}
+
+    # Default model column to index 0 if not explicitly named and rows have cells
+    if model_col is None and headers:
+        model_col = {"index": 0, "name": headers[0]}
+
+    # Detect benchmark mentions in caption or headers
+    known_benchmarks = [
+        "squad", "glue", "superglue", "imagenet", "retrievalqa", "mmlongbench",
+        "hotpotqa", "triviaqa", "ms-marco", "msmarco", "pubmed", "nq", "natural questions"
+    ]
+    detected_benchmarks = []
+    text_corpus = (caption + " " + " ".join(headers)).lower()
+    for bm in known_benchmarks:
+        if bm in text_corpus:
+            detected_benchmarks.append(bm.upper())
+
+    return {
+        "metric_columns": metric_cols,
+        "model_column": model_col,
+        "detected_benchmarks": detected_benchmarks,
+    }
 
 
 def normalize_table_dict(table_data: Any) -> Dict[str, Any]:
