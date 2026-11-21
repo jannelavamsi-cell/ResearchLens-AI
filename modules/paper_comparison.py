@@ -109,7 +109,10 @@ def check_comparability(matrix: Dict[str, Any]) -> ComparabilityWarning:
     distinct_datasets = set()
     for d in dataset_values:
         # Simplify key dataset names
-        for token in ["mimic", "cora", "citeseer", "pubmed", "ms-marco", "imagenet", "squad", "glue"]:
+        for token in [
+            "mimic", "cora", "citeseer", "pubmed", "ms-marco", "msmarco",
+            "imagenet", "squad", "glue", "retrievalqa", "mmlongbench", "hotpotqa", "triviaqa", "nq"
+        ]:
             if token in d:
                 distinct_datasets.add(token.upper())
 

@@ -36,6 +36,15 @@ TAXONOMY_PATTERNS = {
         "multimodal", "temporal", "dynamic", "heterogeneous", "time-series",
         "video", "audio", "long-context", "streaming",
     ],
+    "Document Structure & Layout Intelligence": [
+        "document structure", "table understanding", "hierarchical reasoning",
+        "visual layout", "multi-column", "reading order", "pdf extraction",
+        "complex formatting", "heterogeneous documents",
+    ],
+    "Evaluation Rigor & Benchmark Integrity": [
+        "benchmark contamination", "data leakage", "evaluation bias",
+        "metric validity", "ground truth noise", "comparability", "unseen benchmarks",
+    ],
 }
 
 

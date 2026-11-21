@@ -112,3 +112,49 @@ def test_dataframe_and_markdown_exports(comp_db):
     md_report = matrix_to_markdown(matrix, warning, narrative)
     assert "# ResearchLens AI: Comparative Paper Analysis" in md_report
     assert "Comparability Warning" in md_report
+
+
+def test_comparability_warning_real_benchmarks():
+    from core.schemas import ComparisonCell
+
+    matrix = {
+        "papers": [{"title": "Paper 1"}, {"title": "Paper 2"}],
+        "rows": {
+            "datasets": [
+                ComparisonCell(
+                    paper_id="1",
+                    field_name="datasets",
+                    value="RetrievalQA benchmark with 1271 questions",
+                    evidence_quote="RetrievalQA benchmark",
+                    page=1,
+                ),
+                ComparisonCell(
+                    paper_id="2",
+                    field_name="datasets",
+                    value="HotpotQA multi-hop benchmark",
+                    evidence_quote="HotpotQA multi-hop",
+                    page=1,
+                ),
+            ],
+            "metrics": [
+                ComparisonCell(
+                    paper_id="1",
+                    field_name="metrics",
+                    value="Accuracy and F1",
+                    evidence_quote="Accuracy and F1",
+                    page=1,
+                ),
+                ComparisonCell(
+                    paper_id="2",
+                    field_name="metrics",
+                    value="Exact Match (EM)",
+                    evidence_quote="Exact Match",
+                    page=1,
+                ),
+            ],
+        },
+    }
+    warning = check_comparability(matrix)
+    assert warning.has_warning is True
+    assert len(warning.reasons) >= 1
+    assert "Comparability Warning" in warning.message
