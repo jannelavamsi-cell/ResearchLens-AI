@@ -288,26 +288,35 @@ def empty_state(
 # 7. Safe Render Error Boundary
 # ---------------------------------------------------------------------------
 
-def safe_page_render(func: Callable[..., Any]) -> Callable[..., Any]:
-    """Decorator to catch unhandled errors on a page and render a friendly SaaS error banner."""
-    @functools.wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        try:
-            return func(*args, **kwargs)
-        except Exception as err:
-            logger.error(f"Error rendering page {func.__name__}: {err}", exc_info=True)
-            banner(
-                alert_type="danger",
-                title="Something went wrong rendering this page",
-                message=f"An unexpected error occurred: {str(err)}",
-                details=[
-                    "Ensure your database and models are loaded properly.",
-                    "Click 'Retry Page' below to reload the view.",
-                ],
-            )
-            if st.button("🔄 Retry Page", key=f"retry_{func.__name__}", type="primary"):
-                st.rerun()
-    return wrapper
+def safe_page_render(page_name_or_func: Optional[Any] = None) -> Any:
+    """Decorator to catch unhandled errors on a page and render a friendly SaaS error banner.
+    Supports both @safe_page_render and @safe_page_render("Page Name").
+    """
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        @functools.wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            try:
+                return func(*args, **kwargs)
+            except Exception as err:
+                page_label = page_name_or_func if isinstance(page_name_or_func, str) else getattr(func, "__name__", "Page")
+                logger.error(f"Error rendering page {page_label}: {err}", exc_info=True)
+                banner(
+                    alert_type="danger",
+                    title=f"Something went wrong rendering {page_label}",
+                    message=f"An unexpected error occurred: {str(err)}",
+                    details=[
+                        "Ensure your database and models are loaded properly.",
+                        "Click 'Retry Page' below to reload the view.",
+                    ],
+                )
+                btn_key = f"retry_{getattr(func, '__name__', 'page')}"
+                if st.button("🔄 Retry Page", key=btn_key, type="primary"):
+                    st.rerun()
+        return wrapper
+
+    if callable(page_name_or_func):
+        return decorator(page_name_or_func)
+    return decorator
 
 
 # ---------------------------------------------------------------------------
