@@ -5,6 +5,7 @@ cascading deletes, transaction management, and collection/paper/chunk/extraction
 """
 
 import json
+import os
 import sqlite3
 import uuid
 from contextlib import contextmanager
@@ -17,7 +18,7 @@ from core.schemas import ExtractedField, PageSchema
 logger = get_logger("db_manager")
 
 
-CURRENT_SCHEMA_VERSION = 1
+CURRENT_SCHEMA_VERSION = 2
 
 
 class DBManager:
@@ -88,6 +89,36 @@ class DBManager:
                 (1, "Canonical table schema normalization"),
             )
             logger.info("Migration 1 successfully applied.")
+
+        if current_v < 2:
+            logger.info("Applying Migration 2: Table defensive filtering, taxonomy classification, and normalization")
+            cursor = conn.execute(
+                "SELECT id, paper_id, page_number, table_index, table_json FROM results_tables"
+            )
+            rows = cursor.fetchall()
+            for r in rows:
+                rid, pid, page_num, t_idx, raw_json = r[0], r[1], r[2], r[3], r[4]
+                try:
+                    from modules.results_tables import normalize_table_dict
+
+                    data = json.loads(raw_json)
+                    if isinstance(data, dict):
+                        data["paper_id"] = pid
+                        data["page_number"] = page_num
+                        data["table_index"] = t_idx
+                        norm = normalize_table_dict(data)
+                        conn.execute(
+                            "UPDATE results_tables SET table_json = ? WHERE id = ?",
+                            (json.dumps(norm), rid),
+                        )
+                except Exception as m_err:
+                    logger.warning(f"Migration 2 skipped corrupted table row {rid}: {m_err}")
+
+            conn.execute(
+                "INSERT INTO schema_version (version, description) VALUES (?, ?)",
+                (2, "Defensive filtering, taxonomy classification, and results normalisation"),
+            )
+            logger.info("Migration 2 successfully applied.")
 
     def get_schema_version(self) -> int:
         """Returns the current applied database schema version number."""
@@ -601,6 +632,67 @@ class DBManager:
                 (paper_id,),
             )
             return [dict(row) for row in cursor.fetchall()]
+
+    def reextract_tables_for_paper(self, paper_id: str) -> List[Dict[str, Any]]:
+        """
+        Re-extracts or re-normalizes tables for a specific paper.
+        If the source PDF file is available on disk, runs the full extract_tables_from_pdf pipeline
+        (filtering, caption linking, classification, normalization) and replaces old records.
+        If the source PDF is not found, updates existing stored records in results_tables via normalize_table_dict.
+        """
+        paper = self.get_paper(paper_id)
+        if not paper:
+            logger.warning(f"Cannot re-extract tables: Paper {paper_id} not found in database.")
+            return []
+
+        pdf_path = paper.get("file_path")
+        if pdf_path and os.path.exists(pdf_path):
+            logger.info(f"Re-extracting tables from source PDF {pdf_path} for paper {paper_id}")
+            with self.get_connection() as conn:
+                conn.execute("DELETE FROM results_tables WHERE paper_id = ?", (paper_id,))
+            from modules.results_tables import extract_tables_from_pdf
+            return extract_tables_from_pdf(pdf_path, paper_id, db=self)
+        else:
+            logger.info(f"Source PDF for paper {paper_id} not found on disk; re-normalizing existing table records")
+            from modules.results_tables import normalize_table_dict
+            tables = self.get_results_tables(paper_id)
+            updated = []
+            with self.get_connection() as conn:
+                for r in tables:
+                    rid = r["id"]
+                    try:
+                        data = json.loads(r["table_json"])
+                        if isinstance(data, dict):
+                            data["paper_id"] = paper_id
+                            norm = normalize_table_dict(data)
+                            conn.execute(
+                                "UPDATE results_tables SET table_json = ? WHERE id = ?",
+                                (json.dumps(norm), rid),
+                            )
+                            updated.append(norm)
+                    except Exception as e:
+                        logger.warning(f"Error re-normalizing table {rid}: {e}")
+            return updated
+
+    def reextract_all_tables(self, collection_id: Optional[str] = None) -> Dict[str, int]:
+        """
+        Iterates over all papers in a collection (or entire database) and re-extracts/re-normalizes tables.
+        Returns aggregate counts of processed papers and extracted tables.
+        """
+        with self.get_connection() as conn:
+            if collection_id:
+                cur = conn.execute("SELECT id FROM papers WHERE collection_id = ?", (collection_id,))
+            else:
+                cur = conn.execute("SELECT id FROM papers")
+            pids = [row[0] for row in cur.fetchall()]
+
+        total_tables = 0
+        for pid in pids:
+            tables = self.reextract_tables_for_paper(pid)
+            total_tables += len(tables)
+
+        logger.info(f"Re-extracted tables for {len(pids)} papers (total {total_tables} tables).")
+        return {"papers_count": len(pids), "tables_count": total_tables}
 
     # -----------------------------------------------------------------------
     # Chat History Operations
