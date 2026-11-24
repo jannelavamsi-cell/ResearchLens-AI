@@ -165,7 +165,7 @@ def evaluate_table_candidate(
     if is_ref_sec and not has_table_caption:
         return False, "Located inside references or bibliography section"
 
-    if bib_citation_matches >= 3 and num_ratio < 0.10 and not has_table_caption:
+    if bib_citation_matches >= 3 and not has_table_caption:
         return False, "Located inside references or bibliography section"
 
     # 8. Excessive vertical page coverage (>85% page height)
@@ -244,8 +244,6 @@ def classify_table(
                 s = str(c or "").strip()
                 if any(ch.isdigit() for ch in s):
                     numeric_cells += 1
-
-    num_ratio = numeric_cells / total_cells if total_cells else 0.0
 
     # 1. Hyperparameters
     hp_terms = [
