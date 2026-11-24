@@ -178,16 +178,30 @@ class PDFProcessor:
                 try:
                     tables = page.find_tables()
                     for table_idx, tab in enumerate(tables):
-                        df_data = tab.extract()
-                        if df_data and len(df_data) > 1:
+                        grid_rows = []
+                        if hasattr(tab, "rows") and tab.rows:
+                            for r_obj in tab.rows:
+                                row_vals = []
+                                for c in r_obj.cells:
+                                    if c:
+                                        w_list = page.get_text("words", clip=pymupdf.Rect(c))
+                                        txt = " ".join(w[4] for w in w_list)
+                                        row_vals.append(txt.strip())
+                                    else:
+                                        row_vals.append("")
+                                grid_rows.append(row_vals)
+
+                        if not grid_rows:
+                            df_data = tab.extract() or []
+                            for r in df_data:
+                                grid_rows.append([str(c).strip() if c is not None else "" for c in r])
+
+                        if grid_rows and len(grid_rows) > 1:
                             raw_headers = [
                                 str(c).strip() if c else f"Col_{i+1}"
-                                for i, c in enumerate(df_data[0])
+                                for i, c in enumerate(grid_rows[0])
                             ]
-                            cleaned_rows = [
-                                [str(c).strip() if c is not None else "" for c in row]
-                                for row in df_data[1:]
-                            ]
+                            cleaned_rows = grid_rows[1:]
                             bbox = tuple(tab.bbox)
                             caption = extract_table_caption(page, bbox)
                             is_accepted, rejection_reason = evaluate_table_candidate(

@@ -288,6 +288,40 @@ def classify_table(
     return "other"
 
 
+def _is_multi_value_cell(val_str: str) -> bool:
+    """Check if a table cell contains multiple collapsed numeric values or mixed phrases."""
+    v = val_str.strip()
+    if not v:
+        return False
+    # Contaminated with table subheaders
+    if any(term in v.lower() for term in ["match", "retrieval", "calibration", "model-based"]):
+        return True
+    tokens = [t for t in v.split() if re.match(r"^[-+]?\d+(?:\.\d+)?(?:\([+-]?\d+(?:\.\d+)?[↑↓%]?\))?%?$", t)]
+    if len(tokens) > 1:
+        return True
+    if len(v.split()) > 3 and len(tokens) >= 1:
+        return True
+    return False
+
+
+def _is_squashed_model(m_str: str) -> bool:
+    """Check if a model cell contains multiple squashed model names or section markers."""
+    m = m_str.strip()
+    if re.search(r"\bt\s*=", m, re.I):
+        return True
+    if len(re.findall(r"\(\d+(?:\.\d+)?[Bb]\)", m)) > 1:
+        return True
+    if len(re.findall(r"\(\s*[A-Za-z]+\s+et\s+al\.", m)) > 1:
+        return True
+    families = ["llama", "phi", "gpt", "vicuna", "glm", "qwen", "mistral", "claude", "bert", "t5"]
+    found = [fam for fam in families if re.search(r"\b" + fam, m, re.I)]
+    if len(found) > 1:
+        return True
+    if "§" in m or "ourswith" in m.lower().replace(" ", ""):
+        return True
+    return False
+
+
 def normalize_results_records(
     headers: List[str],
     rows: List[List[Any]],
@@ -365,17 +399,30 @@ def normalize_results_records(
 
     records: List[Dict[str, Any]] = []
     unreliable_detected = False
+    invalid_models = {
+        "#", ".,", ".", "–", "-", "average", "average gain", "averagegain",
+        "total", "total/average", "vanilla §3", "ours ta-are §4",
+    }
+    invalid_values = {".", ".,", "–", "-", ""}
 
     for row in rows:
         if not isinstance(row, list) or len(row) <= model_col_idx:
             continue
 
         raw_model = str(row[model_col_idx]).strip()
-        if not raw_model:
+        if not raw_model or raw_model.lower() in invalid_models or raw_model.startswith("#"):
+            continue
+
+        if _is_squashed_model(raw_model):
+            unreliable_detected = True
             continue
 
         # Check for multiline squashed rows
         model_lines = [ln.strip() for ln in raw_model.split("\n") if ln.strip()]
+        model_lines = [m for m in model_lines if m.lower() not in invalid_models and not m.startswith("#")]
+
+        if not model_lines:
+            continue
 
         if len(model_lines) > 1:
             col_lines: Dict[int, List[str]] = {}
@@ -395,9 +442,17 @@ def normalize_results_records(
                 continue
 
             for item_idx, m_name in enumerate(model_lines):
+                if m_name.lower() in invalid_models or m_name.startswith("#") or _is_squashed_model(m_name):
+                    unreliable_detected = True
+                    continue
                 for ht in header_types:
                     c_idx = ht["col_idx"]
                     val = col_lines[c_idx][item_idx]
+                    if val in invalid_values:
+                        continue
+                    if _is_multi_value_cell(val):
+                        unreliable_detected = True
+                        continue
                     if ht["type"] == "dataset":
                         ds_name = ht["name"]
                         met_name = "Score (%)" if "%" in caption else "Performance"
@@ -414,10 +469,16 @@ def normalize_results_records(
                     })
         else:
             m_name = model_lines[0]
+            if m_name.lower() in invalid_models or m_name.startswith("#") or _is_squashed_model(m_name):
+                unreliable_detected = True
+                continue
             for ht in header_types:
                 c_idx = ht["col_idx"]
                 val = str(row[c_idx]).strip() if c_idx < len(row) and row[c_idx] is not None else ""
-                if not val:
+                if not val or val in invalid_values:
+                    continue
+                if _is_multi_value_cell(val):
+                    unreliable_detected = True
                     continue
 
                 if ht["type"] == "dataset":
@@ -435,11 +496,11 @@ def normalize_results_records(
                     "page": page_number,
                 })
 
-    if not records or (unreliable_detected and len(records) < 2):
+    if not records or unreliable_detected:
         return {
             "reliable": False,
             "records": records,
-            "note": "Irregular row/column alignment prevented unambiguous decomposition; raw table preserved.",
+            "note": "Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved.",
         }
 
     return {
@@ -735,16 +796,30 @@ def extract_tables_from_pdf(
                 continue
 
             for t_idx, table in enumerate(table_finder.tables):
-                raw_rows = table.extract()
-                if not raw_rows:
+                # Clean cell extraction via row cell bounding boxes to preserve intact decimals
+                grid_rows = []
+                if hasattr(table, "rows") and table.rows:
+                    for r_obj in table.rows:
+                        row_vals = []
+                        for c in r_obj.cells:
+                            if c:
+                                w_list = page.get_text("words", clip=pymupdf.Rect(c))
+                                txt = " ".join(w[4] for w in w_list)
+                                row_vals.append(txt.strip())
+                            else:
+                                row_vals.append("")
+                        grid_rows.append(row_vals)
+
+                if not grid_rows:
+                    raw_rows = table.extract() or []
+                    for r in raw_rows:
+                        grid_rows.append([str(c).strip() if c is not None else "" for c in r])
+
+                if not grid_rows:
                     continue
 
-                headers = [str(c).strip() if c else f"Col_{i+1}" for i, c in enumerate(raw_rows[0])]
-                data_rows = raw_rows[1:] if len(raw_rows) > 1 else []
-
-                cleaned_rows = []
-                for row in data_rows:
-                    cleaned_rows.append([str(c).strip() if c is not None else "" for c in row])
+                headers = [str(c).strip() if c else f"Col_{i+1}" for i, c in enumerate(grid_rows[0])]
+                cleaned_rows = grid_rows[1:] if len(grid_rows) > 1 else []
 
                 # Extract bounding box and caption
                 bbox = tuple(table.bbox)

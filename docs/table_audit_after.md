@@ -1,19 +1,20 @@
 # Table Detection & Results Extraction Audit (After Filtering)
 
 > **Audit Date:** 2026-11-24  
-> **Target:** Verification of defensive filtering thresholds, academic taxonomy classification, caption linking, and structured results normalization across corpus papers (`data/researchlens.db` and `data/uploaded_papers/`).
+> **Target:** Verification of defensive filtering thresholds, academic taxonomy classification, caption linking, verbatim cell extraction, and structured results normalization across corpus papers (`data/researchlens.db` and `data/uploaded_papers/`).
 
 ---
 
 ## 1. Executive Summary & Before vs. After Comparison
 
-In the baseline implementation (`docs/table_audit_before.md`), table extraction relied on raw PyMuPDF `find_tables()` with no defensive rejection thresholds, no academic taxonomy classification, no caption extraction, and no structured results normalization.
+In the baseline implementation (`docs/table_audit_before.md`), table extraction relied on raw PyMuPDF `find_tables()` with no defensive rejection thresholds, no academic taxonomy classification, no caption extraction, and no structured results normalization. Furthermore, raw PyMuPDF table extraction suffered from split decimal points across cell newlines (e.g. `'803\n.'` instead of `'80.3'`).
 
-In Steps 2–4, we integrated:
-1. **Defensive Filtering Thresholds:** Documented thresholds rejecting non-tables: minimum 2 rows/columns, consistent column counts, max 60% empty cells, max 120 char average cell length, prose narrative sentence detector (digit-ratio aware), references/bibliography section detector (caption-aware), and vertical page height coverage limit (<= 85%).
-2. **Caption Linking:** Bounding-box proximity parser extracting standard `Table N: ...` and `TABLE [IVXLCDM\d]+: ...` headers directly from the PDF canvas.
-3. **Four-Way Academic Taxonomy:** Strict classification into `results`, `hyperparameters`, `dataset_statistics`, or `other`.
-4. **Structured Results Normalization:** Decomposing empirical evaluation tables into canonical `{model, dataset, metric, value, page}` tuples while preserving raw tables and flagging `reliable=False` when visual layout irregularities prevent unambiguous parsing.
+In the updated pipeline, we implemented:
+1. **Verbatim Intact Cell Extraction:** Using cell bounding boxes (`page.get_text("words", clip=Rect(cell_bbox))`) to ensure decimal numbers (`80.3`, `48.85`, `+14.9`) remain unbroken.
+2. **Defensive Filtering Thresholds:** Documented thresholds rejecting non-tables: minimum 2 rows/columns, consistent column counts, max 60% empty cells, max 120 char average cell length, prose narrative sentence detector (digit-ratio aware), references/bibliography section detector (caption-aware), and vertical page height coverage limit (<= 85%).
+3. **Caption Linking:** Bounding-box proximity parser extracting standard `Table N: ...` and `TABLE [IVXLCDM\d]+: ...` headers directly from the PDF canvas.
+4. **Four-Way Academic Taxonomy:** Strict classification into `results`, `hyperparameters`, `dataset_statistics`, or `other`.
+5. **Strict Structured Results Normalization:** Decomposing empirical evaluation tables into canonical `{model, dataset, metric, value, page}` tuples. Crucially, if a table contains collapsed sub-rows, squashed multiline models, or ambiguous multi-level headers, the normalizer strictly sets `reliable=False`, filters out squashed row tuples, and preserves the verbatim raw table as canonical truth.
 
 ### Before vs. After Table Counts
 
@@ -29,75 +30,147 @@ In Steps 2–4, we integrated:
 
 ---
 
-## 2. Spot-Checks: 5 Accepted Tables
+## 2. Spot-Checks: 5 Accepted Tables (Verbatim Database Dumps)
 
-Below are 5 representative accepted tables from the real papers, detailing their content, classification, caption linking, and normalization reliability.
+The following spot-checks are verbatim command-line printouts extracted directly from `data/researchlens.db`. No values were typed by hand.
 
-### Spot-Check 1: Paper 7, Page 6, Table 1 (Main Benchmark Results)
+### Spot-Check 1: Paper 7 (LongRAG) - Page 6, Table 1 (Empirical Multi-Hop Results)
+- **Page:** 6 | **Table Index:** 1
+- **Linked Caption:** `Table 1: Results (%) of overall performance on three multi-hop datasets. The "Grey Areas" represent different categories of baselines or our system with different fine-tuning settings. “Bold Font” denotes the highest absolute value, while "Underlined Font" expresses the highest relative gain value compared to Vanilla RAG. Ours with (or`
+- **Classification:** `results`
 - **Shape:** 14 rows × 5 columns
-- **Linked Caption:** `Table 1: Results (%) of overall performance on three multi-hop datasets. The best performance is in bold, and the second best performance is underlined. ...`
-- **Classification:** `results`
-- **Headers:** `['Model', 'HotpotQA', '2WikiMQA', 'MusiQue', 'Average']`
-- **Sample Rows:**
-  - Row 2: `['LongAlign-7B -64k (Llama2) (Bai et al 2024)...', '48.85', '28.56', '25.14', '34.18']`
-  - Row 4: `['CFIC -7B (Llama2) (Qian et al 2024)...', '34.00', '–', '14.70', '24.35']`
-  - Row 7: `['LongRAG -Llama2 -7B -4k...', '53.85', '45.61', '26.22', '41.89']`
-- **Normalization:** `reliable=True`, successfully decomposed into 33 structured tuples `{model, dataset, metric, value, page}`.
-- **Verification:** **Genuine table**. This is the primary empirical results table of the paper.
+- **Headers:** `["Model", "HotpotQA", "2WikiMQA", "MusiQue", "Average"]`
+- **Normalization Reliable:** `False`
+- **Normalization Note:** `Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved.`
+- **Normalized Records Count:** 16
+
+```text
+QUERY: sqlite3 data/researchlens.db "SELECT table_json FROM results_tables WHERE paper_id = '16718843-97ea-4e24-8965-cee147facac3' AND page_number = 6 AND table_index = 1"
+VERBATIM STORED ROWS:
+Row 0: ["", "", "", "", ""]
+Row 1: ["#", "Long-Context LLM Methods #", "", "", ""]
+Row 2: ["LongAlign-7B-64k (Llama2) (Bai et al., 2024) LongLoRA-13B-32k (Llama2) (Chen et al., 2023b)", "48.85 47.45", "28.56 42.92", "25.14 29.46", "34.18 39.94"]
+Row 3: ["", "# Advanced RAG Methods #", "", "", ""]
+Row 4: ["CFIC-7B (Llama2) (Qian et al., 2024) CRAG (GPT-3.5-Turbo) (Yan et al., 2024) Self-RAG (GPT-3.5-Turbo) (Asai et al., 2023)", "34.00 52.04 50.51", "- 41.13 46.75", "14.70 25.34 24.62", "24.35 39.50 40.63"]
+Row 5: ["", "# RAG-Base (Vanilla RAG) #", "", "", ""]
+Row 6: ["Vicuna-v1.5-7B-16k (Zheng et al., 2023) Qwen-1.5-7B-32k (Bai et al., 2023a) Llama3-8B-8k (Touvron et al., 2023) ChatGLM3-6B-32k (Du et al., 2022) GPT-3.5-Turbo-16k GPT-3.5-Turbo Llama3-70B-8k GLM-4", "38.63 45.70 48.25 52.57 50.17 52.31 52.33 57.41", "27.92 34.69 43.47 42.56 45.32 43.44 50.23 52.91", "15.68 25.08 19.66 25.51 21.84 25.22 25.49 27.55", "27.41 35.16 37.13 40.21 39.11 40.32 42.68 45.96"]
+Row 7: ["", "# Ours with SFT #", "", "", ""]
+Row 8: ["LongRAG-Llama2-7B-4k LongRAG-Llama2-13B-4k LongRAG-Qwen-1.5-7B-32k LongRAG-Llama3-8B-8k LongRAG-Vicuna-v1.5-7B-16k", "53.85 57.05 52.91 (7.21↑) 52.39 (4.14↑) 55.55 (16.92↑)", "45.61 49.95 46.65 (11.96↑) 49.67 (6.20↑) 50.13 (22.21↑)", "26.22 33.63 31.85 (6.77↑) 31.70 (12.04↑) 28.29 (12.61↑)", "41.89 46.88 43.80 (8.65↑) 44.59 (7.46↑) 44.66 (17.25↑)"]
+Row 9: ["LongRAG-ChatGLM3-6B-32k", "55.93 (3.36↑)", "54.85 (12.29↑)", "33.00 (7.49↑)", "47.93 (7.71↑)"]
+Row 10: ["", "# Ours without SFT", "#", "", ""]
+Row 11: ["LongRAG-GPT-3.5-Turbo", "56.17 (3.86↑)", "51.37 (7.93↑)", "32.83 (7.61↑)", "46.79 (6.47↑)"]
+Row 12: ["LongRAG-GPT-3.5-Turbo-16k", "59.11 (8.94↑)", "51.25 (5.93↑)", "30.37 (8.53↑)", "46.91 (7.80↑)"]
+Row 13: ["LongRAG-GLM-4", "62.11 (4.70↑)", "57.16 (4.25↑)", "38.40 (10.85↑)", "52.56 (6.60↑)"]
+
+NORMALIZED RECORDS (EXTRACTED TUPLES):
+  {"model": "LongRAG-ChatGLM3-6B-32k", "dataset": "HotpotQA", "metric": "Score (%)", "value": "55.93 (3.36↑)", "page": 6}
+  {"model": "LongRAG-ChatGLM3-6B-32k", "dataset": "2WikiMQA", "metric": "Score (%)", "value": "54.85 (12.29↑)", "page": 6}
+  {"model": "LongRAG-ChatGLM3-6B-32k", "dataset": "MusiQue", "metric": "Score (%)", "value": "33.00 (7.49↑)", "page": 6}
+  {"model": "LongRAG-ChatGLM3-6B-32k", "dataset": "Benchmark Dataset", "metric": "Average", "value": "47.93 (7.71↑)", "page": 6}
+  {"model": "LongRAG-GPT-3.5-Turbo", "dataset": "HotpotQA", "metric": "Score (%)", "value": "56.17 (3.86↑)", "page": 6}
+  {"model": "LongRAG-GPT-3.5-Turbo", "dataset": "2WikiMQA", "metric": "Score (%)", "value": "51.37 (7.93↑)", "page": 6}
+  {"model": "LongRAG-GPT-3.5-Turbo", "dataset": "MusiQue", "metric": "Score (%)", "value": "32.83 (7.61↑)", "page": 6}
+  {"model": "LongRAG-GPT-3.5-Turbo", "dataset": "Benchmark Dataset", "metric": "Average", "value": "46.79 (6.47↑)", "page": 6}
+  ... (8 more tuples)
+```
 
 ---
 
-### Spot-Check 2: Paper 6, Page 4, Table 1 (Main Evaluation Table)
+### Spot-Check 2: Paper 6 (RetrievalQA) - Page 4, Table 1 (Main Evaluation Table)
+- **Page:** 4 | **Table Index:** 1
+- **Linked Caption:** `Table 1: Retrieval and match accuracy on RetrievalQA. * indicates using 250 examples for testing to reduce API costs. Best scores in Bold and second best in underline.`
+- **Classification:** `results`
 - **Shape:** 8 rows × 4 columns
-- **Linked Caption:** `Table 1: Retrieval and match accuracy on RetrievalQA. * indicates using 250 questions to calculate accuracy. Best results are in bold.`
-- **Classification:** `results`
-- **Headers:** `['Baselines (1 ,271)', 'Adaptive', 'Retrieval', 'Always Retrieval']`
-- **Sample Rows:**
-  - Row 0: `['Llama-2 (7B)', '80.3', '79.2', '78.5']`
-  - Row 1: `['Vicuna (7B)', '76.4', '75.1', '74.8']`
-  - Row 7: `['Averagegain', '+4.1', '+2.3', '–']`
-- **Normalization:** `reliable=True`, decomposed into 15 structured tuples.
-- **Verification:** **Genuine table**.
+- **Headers:** `["Baselines (1,271)", "Adaptive", "Retrieval", "Always Retrieval"]`
+- **Normalization Reliable:** `False`
+- **Normalization Note:** `Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved.`
+- **Normalized Records Count:** 6
+
+```text
+QUERY: sqlite3 data/researchlens.db "SELECT table_json FROM results_tables WHERE paper_id = '46353944-90f2-435b-a40d-5822cec352e1' AND page_number = 4 AND table_index = 1"
+VERBATIM STORED ROWS:
+Row 0: ["Self-RAG (7B) t = 0.25 t = 0.5 t = 0.75", "Retrieval Match Calibration-based 100.0 31.9 23.0 10.6 0.0 6.0", "", "Match 31.9"]
+Row 1: ["t = None Vanilla §3", "0.4", "6.0 Model-based", ""]
+Row 2: ["TinyLlama (1.1B) Phi-2 (2.7B)", "39.1 94.1", "14.7 35.0", "28.2 36.4"]
+Row 3: ["Llama-2 (7B)", "80.3", "26.1", "36.0"]
+Row 4: ["GPT-3.5", "49.3", "20.8", "38.2"]
+Row 5: ["GPT-4* Ours TA-ARE §4", "67.6", "37.6", "46.0"]
+Row 6: ["TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) GPT-3.5 GPT-4*", "54.1(+15.0) 95.5(+1.4) 86.0(+5.7) 86.3(+37.0) 83.2(+15.6)", "19.0(+4.3) 36.0(+1.0) 30.7(+4.6) 35.8(+15.0) 46.4(+8.8)", "28.2 36.4 36.0 38.2 46.0"]
+Row 7: ["Average gain", "+14.9", "+6.7", "–"]
+
+NORMALIZED RECORDS (EXTRACTED TUPLES):
+  {"model": "Llama-2 (7B)", "dataset": "RetrievalQA", "metric": "Adaptive", "value": "80.3", "page": 4}
+  {"model": "Llama-2 (7B)", "dataset": "RetrievalQA", "metric": "Retrieval", "value": "26.1", "page": 4}
+  {"model": "Llama-2 (7B)", "dataset": "RetrievalQA", "metric": "Always Retrieval", "value": "36.0", "page": 4}
+  {"model": "GPT-3.5", "dataset": "RetrievalQA", "metric": "Adaptive", "value": "49.3", "page": 4}
+  {"model": "GPT-3.5", "dataset": "RetrievalQA", "metric": "Retrieval", "value": "20.8", "page": 4}
+  {"model": "GPT-3.5", "dataset": "RetrievalQA", "metric": "Always Retrieval", "value": "38.2", "page": 4}
+```
 
 ---
 
-### Spot-Check 3: Paper 6, Page 11, Table 5 (Hyperparameters Table)
-- **Shape:** 7 rows × 2 columns
-- **Linked Caption:** `Table 5: Implementation hyperparameters. Tuning these hyperparameters makes them hallucinate. Setting top_p = 1.0 ...`
+### Spot-Check 3: Paper 6 (RetrievalQA) - Page 11, Table 5 (Implementation Hyperparameters)
+- **Page:** 11 | **Table Index:** 2
+- **Linked Caption:** `Table 5: Implementation hyperparameters. rameters makes them hallucinate. Since these ques- tions only take a tiny portion of the entire dataset`
 - **Classification:** `hyperparameters`
-- **Headers:** `['Parameters', 'Values']`
-- **Content:**
-  - `['temperature', '0.0']`
-  - `['top_p', '1.0']`
-  - `['frequency_penalty', '0.0']`
-  - `['presence_penalty', '0.0']`
-  - `['max_tokens', '256']`
-- **Normalization:** Skipped (`norm_reliable=False, norm_records=[]`), correctly classified as non-results configuration data.
-- **Verification:** **Genuine table**. Accurately isolated from benchmark evaluation tables.
+- **Shape:** 7 rows × 2 columns
+- **Headers:** `["Parameters", "Values"]`
+- **Normalization Reliable:** `False`
+- **Normalization Note:** `Rejected or non-results table`
+- **Normalized Records Count:** 0
+
+```text
+QUERY: sqlite3 data/researchlens.db "SELECT table_json FROM results_tables WHERE paper_id = '46353944-90f2-435b-a40d-5822cec352e1' AND page_number = 11 AND table_index = 2"
+VERBATIM STORED ROWS:
+Row 0: ["temperature", "0.0"]
+Row 1: ["top_p", "1.0"]
+Row 2: ["max_tokens", "100"]
+Row 3: ["Retrieved docs", "top-5"]
+Row 4: ["Threshold (Self-RAG)", "[None, 0.25, 0.5, 0.75]"]
+Row 5: ["# demonstrations (TA-ARE)", "4"]
+Row 6: ["Eval metric", "match/retrieval accuracy"]
+```
 
 ---
 
-### Spot-Check 4: Paper 7, Page 7, Table 2 (Corpus Statistics Table)
-- **Shape:** 1 row × 4 columns (data row)
-- **Linked Caption:** `Table 2: Statistics of experimental data. "Avg. Len" denotes the average token length of the retrieved documents.`
+### Spot-Check 4: Paper 7 (LongRAG) - Page 7, Table 2 (Dataset Corpus Statistics)
+- **Page:** 7 | **Table Index:** 1
+- **Linked Caption:** `Table 2: Statistics of experimental data. "Avg.`
 - **Classification:** `dataset_statistics`
-- **Headers:** `['Dataset', 'HotpotQA', '2WikiMQA', 'MuSiQue']`
-- **Content:**
-  - `['# Documents', '5,233,615', '5,233,615', '5,233,615']`
-- **Normalization:** Skipped (`norm_reliable=False`), correctly categorized as dataset statistics.
-- **Verification:** **Genuine table**.
+- **Shape:** 1 rows × 4 columns
+- **Headers:** `["Dataset", "HotpotQA", "2WikiMQA", "MuSiQue"]`
+- **Normalization Reliable:** `False`
+- **Normalization Note:** `Rejected or non-results table`
+- **Normalized Records Count:** 0
+
+```text
+QUERY: sqlite3 data/researchlens.db "SELECT table_json FROM results_tables WHERE paper_id = '16718843-97ea-4e24-8965-cee147facac3' AND page_number = 7 AND table_index = 1"
+VERBATIM STORED ROWS:
+Row 0: ["Num of Samples Avg. Length of p Num of p Avg. Length of P", "200 1092 1715 9151", "200 535 1464 4887", "200 1032 1877 11214"]
+```
 
 ---
 
-### Spot-Check 5: Paper 6, Page 13, Table 11 (Qualitative Data Examples)
-- **Shape:** 5 rows × 4 columns
+### Spot-Check 5: Paper 6 (RetrievalQA) - Page 13, Table 11 (Qualitative Data Examples)
+- **Page:** 13 | **Table Index:** 2
 - **Linked Caption:** `Table 11: Data examples of RetrievalQA (questions need external retrieval).`
 - **Classification:** `other`
-- **Headers:** `['Category', 'DataSource', 'Question', 'Answer']`
-- **Sample Content:**
-  - `['Newworld knowledge', 'RealTimeQA (Kasai et al. 2023)', 'Which 2024 Republican presidential contender announced that he is ending his campaign?', 'Former Texas Rep. Will Hurd']`
-- **Normalization:** Skipped, correctly prevented from being ingested into numerical metrics comparison.
-- **Verification:** **Genuine table** (qualitative examples, not numerical results).
+- **Shape:** 5 rows × 4 columns
+- **Headers:** `["Category", "Data Source", "Question", "Answer"]`
+- **Normalization Reliable:** `False`
+- **Normalization Note:** `Rejected or non-results table`
+- **Normalized Records Count:** 0
+
+```text
+QUERY: sqlite3 data/researchlens.db "SELECT table_json FROM results_tables WHERE paper_id = '46353944-90f2-435b-a40d-5822cec352e1' AND page_number = 13 AND table_index = 2"
+VERBATIM STORED ROWS:
+Row 0: ["New world", "RealTimeQA (Kasai et al., 2023)", "Which 2024 Republican presidential contender announced that he is ending his campaign?", "Former Texas Rep. Will Hurd"]
+Row 1: ["knowledge", "FreshQA (Vu et al., 2023)", "What is the latest highest-grossing movie of the week at the Box office?", "Mean Girls"]
+Row 2: ["", "ToolQA (Zhuang et al., 2023)", "What time did Grace attend Broadway Show on 2022/02/17?", "8:00 PM"]
+Row 3: ["Long-tail knowledge", "PopQA (Mallen et al., 2023)", "What is Henry Feilden’s occupation?", "politician"]
+Row 4: ["", "TriviaQA (Joshi et al., 2017)", "Which bird, that breeds in northern Europe in pine and beech forests, has a chestnut brown back, grey head, dark tail, buff breast and a striped black throat?", "fieldfare"]
+```
+
 
 ---
 
@@ -183,15 +256,24 @@ Below are 5 candidates rejected by the defensive filter, demonstrating how false
 
 ---
 
-## 4. Candid Assessment & Known Limitations
+## 4. Candid Assessment, Ground-Truth Comparison & Known Limitations
 
-During the audit, we uncovered and resolved critical subtle bugs:
+### 4.1 PyMuPDF Decimal Splitting vs. Clean Cell Extraction
+- **Issue Discovered:** When calling `table.extract()` directly in PyMuPDF, decimal characters at line ends were split into separate lines (e.g. `'803\n.'` or `'4885\n.'`).
+- **Fix:** Switched table extraction in `modules/results_tables.py` and `modules/pdf_processor.py` to extract cell words bounded by `page.get_text("words", clip=Rect(cell_bbox))`. This extracts decimals completely intact (`80.3`, `48.85`, `+14.9`).
 
-1. **Author Baseline Citations vs. Bibliography Rejection:**
-   - In our first filter pass, Table 1 of Paper 7 was falsely rejected because rows cited baselines like `CFIC -7B (Llama2) (Qian et al 2024)` and `Self -RAG (Asai et al 2023)`. Because `bib_citation_matches` matched `et al.` and `2024`, it triggered the bibliography rule.
-   - *Resolution:* Added caption-awareness. If an extracted block has a standard academic caption matching `Table \d+:`, baseline citations inside the table do not trigger bibliography rejection.
-2. **Squashed Multiline Cells in Academic PDFs:**
-   - Several tables (e.g. Paper 6 Table 6 and Table 7; Paper 7 Table 3) lack horizontal internal ruling lines. PyMuPDF extracts 3–4 model rows squashed into a single multiline string separated by `\n`.
-   - *Resolution:* In `evaluate_table_candidate`, digit-ratio awareness prevents multiline squashed numbers from being flagged as prose paragraphs. In `normalize_results_records`, when rows are squashed without clean column alignment, the system sets `normalization_reliable=False` and preserves the raw table intact rather than hallucinating broken tuples.
-3. **Plural vs. Singular Term Boundaries:**
-   - The regex `_matches_term` was updated to support optional trailing plural `'s'` so that terms like `hyperparameters`, `statistics`, and `benchmarks` match reliably without false substring triggers (e.g. `em` matching `email`).
+### 4.2 Multi-Level Headers & Squashed Rows in Academic PDFs
+- **Complex Table Structure:** Real academic benchmark tables (such as RetrievalQA Table 1 on page 4 and LongRAG Table 1 on page 6) frequently use hierarchical two-level headers (e.g. a spanning "Adaptive Retrieval" super-header above "Retrieval" and "Match" subheaders) and collapsed rows without horizontal rule lines.
+- **Strict Normalization Reliability:**
+  - Previously, `normalization_reliable=True` was erroneously reported on these tables because some rows parsed.
+  - Now, the normalizer checks for squashed multi-model entries (`_is_squashed_model`) and multi-value cell entries (`_is_multi_value_cell`). When squashed rows are detected, `unreliable_detected=True` is raised.
+  - The table strictly outputs `normalization_reliable=False` with note: `"Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved."`
+  - Downstream applications and the UI must rely on the raw table (`rows_data`), which preserves the exact ground truth numbers from the PDF.
+
+### 4.3 Provenance of Earlier Hallucinated Numbers
+In an earlier drafting of `docs/table_audit_after.md`, three sample rows were manually typed rather than printed verbatim:
+1. `Llama-2 (7B) 80.3 / 79.2 / 78.5`: `80.3` is genuine (Adaptive Retrieval -> Retrieval Acc). However, `79.2` and `78.5` do not appear anywhere in the paper; they were typed from memory/hallucinated during manual markdown drafting.
+2. `Vicuna (7B) 76.4 / 75.1 / 74.8`: There is no Vicuna row in Table 1 on page 4. Vicuna appears in Table 4 (page 11) and in LongRAG, while `76.4` is the F1 score of GPT-4* in Table 10 (page 13). The row was hallucinated.
+3. `Average gain +4.1 / +2.3`: The true table values are `+14.9 / +6.7 / –`. The claimed numbers were picked from discussion text on page 5.
+
+All spot-checks in this document are now generated exclusively via verbatim SQLite dumps directly from `data/researchlens.db`.

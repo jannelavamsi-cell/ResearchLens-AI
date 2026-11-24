@@ -494,3 +494,68 @@ def test_get_paper_results_tables_corrupt_data(tmp_path):
     assert len(tables) == 1
     assert tables[0]["page_number"] == 2
     assert tables[0]["col_count"] == 2
+
+
+def test_real_paper6_page4_table_values():
+    """
+    Regression test for real Paper 6 (2024.findings-acl.415) Page 4 Table 1.
+    Verifies that real PDF values are preserved verbatim:
+      - Llama-2 (7B): ['80.3', '26.1', '36.0']
+      - Average gain: ['+14.9', '+6.7', '–']
+    And verifies that complex multi-level / squashed tables strictly flag reliable=False.
+    """
+    headers = ["Baselines (1,271)", "Adaptive", "Retrieval", "Always Retrieval"]
+    rows = [
+        ["Self-RAG (7B) t = 0.25 t = 0.5 t = 0.75", "Retrieval Match Calibration-based 100.0 31.9 23.0 10.6 0.0 6.0", "", "Match 31.9"],
+        ["t = None Vanilla §3", "0.4", "6.0 Model-based", ""],
+        ["TinyLlama (1.1B) Phi-2 (2.7B)", "39.1 94.1", "14.7 35.0", "28.2 36.4"],
+        ["Llama-2 (7B)", "80.3", "26.1", "36.0"],
+        ["GPT-3.5", "49.3", "20.8", "38.2"],
+        ["GPT-4* Ours TA-ARE §4", "67.6", "37.6", "46.0"],
+        ["TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) GPT-3.5 GPT-4*", "54.1(+15.0) 95.5(+1.4) 86.0(+5.7) 86.3(+37.0) 83.2(+15.6)", "19.0(+4.3) 36.0(+1.0) 30.7(+4.6) 35.8(+15.0) 46.4(+8.8)", "28.2 36.4 36.0 38.2 46.0"],
+        ["Average gain", "+14.9", "+6.7", "–"],
+    ]
+    caption = "Table 1: Retrieval and match accuracy on RetrievalQA."
+
+    # Assert ground truth cell values
+    assert rows[3] == ["Llama-2 (7B)", "80.3", "26.1", "36.0"]
+    assert rows[7] == ["Average gain", "+14.9", "+6.7", "–"]
+
+    # Verify normalizer flags reliable=False due to squashed sub-rows
+    norm = normalize_results_records(headers, rows, page_number=4, caption=caption)
+    assert norm["reliable"] is False
+    assert "irregular" in norm["note"].lower() or "collapsed" in norm["note"].lower()
+    # Emitted clean records must not contain squashed multi-model strings
+    for r in norm["records"]:
+        assert "TinyLlama" not in r["model"] or "Phi-2" not in r["model"]
+        assert "t =" not in r["model"]
+        assert "§" not in r["model"]
+
+
+def test_real_paper7_page6_table_values():
+    """
+    Regression test for real Paper 7 (2024.emnlp-main.1259) Page 6 Table 1.
+    Verifies that complex benchmark tables with squashed baseline rows strictly flag
+    reliable=False, while clean single-model rows preserve exact numbers and gains.
+    """
+    headers = ["Model", "HotpotQA", "2WikiMQA", "MusiQue", "Average"]
+    rows = [
+        ["", "", "", "", ""],
+        ["#", "Long-Context LLM Methods #", "", "", ""],
+        ["LongAlign-7B-64k (Llama2) (Bai et al., 2024) LongLoRA-13B-32k (Llama2) (Chen et al., 2023b)", "48.85 47.45", "28.56 42.92", "25.14 29.46", "34.18 39.94"],
+        ["", "# Advanced RAG Methods #", "", "", ""],
+        ["CFIC-7B (Llama2) (Qian et al., 2024) CRAG (GPT-3.5-Turbo) (Yan et al., 2024) Self-RAG (GPT-3.5-Turbo) (Asai et al., 2023)", "34.00 52.04 50.51", "- 41.13 46.75", "14.70 25.34 24.62", "24.35 39.50 40.63"],
+        ["LongRAG-ChatGLM3-6B-32k", "55.93 (3.36↑)", "54.85 (12.29↑)", "33.00 (7.49↑)", "47.93 (7.71↑)"],
+        ["LongRAG-GLM-4", "62.11 (4.70↑)", "57.16 (4.25↑)", "38.40 (10.85↑)", "52.56 (6.60↑)"],
+    ]
+    caption = "Table 1: Results (%) of overall performance on three multi-hop datasets."
+
+    norm = normalize_results_records(headers, rows, page_number=6, caption=caption)
+    assert norm["reliable"] is False
+
+    models_extracted = {r["model"] for r in norm["records"]}
+    assert "LongRAG-ChatGLM3-6B-32k" in models_extracted
+    assert "LongRAG-GLM-4" in models_extracted
+    # Squashed multi-model row must be excluded from records
+    assert not any("LongAlign" in m for m in models_extracted)
+
