@@ -31,8 +31,8 @@ MAX_PAGE_HEIGHT_COVERAGE: float = 0.85  # Table bbox covering >85% of page verti
 
 
 def _matches_term(term: str, text: str) -> bool:
-    """Checks if a term appears with word boundaries or exact token match."""
-    pattern = r"(?:^|\W)" + re.escape(term) + r"(?:$|\W)"
+    """Checks if a term appears with word boundaries or exact token match, permitting optional plural 's'."""
+    pattern = r"(?:^|\W)" + re.escape(term) + r"s?(?:$|\W)"
     return bool(re.search(pattern, text, re.IGNORECASE))
 
 
@@ -119,7 +119,7 @@ def evaluate_table_candidate(
                 if not has_multiline_list:
                     if len(s) > MAX_CELL_SENTENCE_LENGTH:
                         narrative_sentences += 1
-                    elif len(s) > 100 and s.count(". ") >= 2 and not any(ch.isdigit() for ch in s):
+                    elif len(s) > 75 and (s.count(". ") >= 1 or s.endswith(".")) and not any(ch.isdigit() for ch in s):
                         narrative_sentences += 1
 
                 # Check for bibliography markers
@@ -141,6 +141,8 @@ def evaluate_table_candidate(
         return False, f"Average cell length exceeds threshold ({avg_len:.1f} > {MAX_AVG_CELL_LENGTH:.0f} chars); narrative text block"
 
     # 6. Narrative sentences check
+    if narrative_sentences >= 1 and num_ratio < MIN_NUMERIC_RATIO_RESULTS:
+        return False, f"Contains {narrative_sentences} narrative prose sentence cell(s); misdetected paragraph"
     if narrative_sentences >= 2:
         return False, f"Contains {narrative_sentences} narrative prose sentence cell(s); misdetected paragraph"
 
