@@ -43,6 +43,7 @@ def evaluate_table_candidate(
     page_height: Optional[float] = None,
     section_name: Optional[str] = None,
     surrounding_text: Optional[str] = None,
+    caption: Optional[str] = None,
 ) -> Tuple[bool, Optional[str]]:
     """
     Evaluates whether raw tabular extraction constitutes a genuine, well-formed table
@@ -114,12 +115,15 @@ def evaluate_table_candidate(
                     numeric_cells += 1
 
                 # Check for prose paragraph indicators:
-                lines = s.split("\n")
-                has_multiline_list = len(lines) >= 3 and all(len(ln.strip()) < 50 for ln in lines if ln.strip())
-                if not has_multiline_list:
+                # A prose narrative cell has substantial text without tabular numbers
+                digits_count = sum(1 for ch in s if ch.isdigit())
+                digits_ratio = digits_count / len(s) if len(s) > 0 else 0.0
+                is_prose_block = digits_ratio < 0.08
+
+                if is_prose_block:
                     if len(s) > MAX_CELL_SENTENCE_LENGTH:
                         narrative_sentences += 1
-                    elif len(s) > 75 and (s.count(". ") >= 1 or s.endswith(".")) and not any(ch.isdigit() for ch in s):
+                    elif len(s) > 75 and (s.count(". ") >= 1 or s.endswith(".")):
                         narrative_sentences += 1
 
                 # Check for bibliography markers
@@ -154,7 +158,14 @@ def evaluate_table_candidate(
     ) or any(
         k in surr_lower for k in ("references\n", "bibliography\n", "literature cited\n")
     )
-    if is_ref_sec or bib_citation_matches >= 3:
+    has_table_caption = bool(
+        caption and re.match(r"^(Table\s+\d+|TABLE\s+[IVXLCDM\d]+)", caption.strip(), re.IGNORECASE)
+    )
+
+    if is_ref_sec and not has_table_caption:
+        return False, "Located inside references or bibliography section"
+
+    if bib_citation_matches >= 3 and num_ratio < 0.10 and not has_table_caption:
         return False, "Located inside references or bibliography section"
 
     # 8. Excessive vertical page coverage (>85% page height)
@@ -254,23 +265,26 @@ def classify_table(
     if any(_matches_term(t, text_corpus) for t in ds_terms):
         return "dataset_statistics"
 
-    # 3. Results tables: must feature numbers AND metric indicators or high numeric density
+    # 3. Results tables: must feature numbers AND metric indicators
     metric_terms = [
         "accuracy", "acc", "f1", "precision", "recall", "bleu", "rouge", "auc",
         "map", "ndcg", "mrr", "loss", "error", "latency", "throughput", "p@1",
         "em", "exact match", "perplexity", "score", "match", "results (%)",
-        "overall performance", "ablation", "averagegain", "relative gain"
+        "overall performance", "performance", "ablation", "averagegain",
+        "relative gain", "results", "transferability", "benchmark"
     ]
     has_metric = any(_matches_term(t, text_corpus) for t in metric_terms)
-    model_terms = ["model", "method", "approach", "baseline", "system", "architecture"]
-    has_model = any(_matches_term(m, text_corpus) for m in model_terms)
 
-    # An empirical results table requires numbers
-    if (has_metric or has_model) and numeric_cells >= 2:
-        return "results"
-    if has_metric and numeric_cells >= 1:
-        return "results"
-    if num_ratio >= 0.35 and numeric_cells >= 3:
+    # Reject qualitative tables (e.g. data examples, prompts, QA pairs)
+    qual_header_terms = ["question", "answer", "prompt", "completion", "input", "output"]
+    headers_corpus = " ".join(str(h) for h in headers).lower()
+    has_header_metric = any(
+        _matches_term(m, headers_corpus)
+        for m in ["accuracy", "match", "f1", "score", "precision", "recall", "bleu", "rouge", "loss", "retrieval"]
+    )
+    is_qualitative = any(_matches_term(q, headers_corpus) for q in qual_header_terms) and not has_header_metric
+
+    if not is_qualitative and has_metric and numeric_cells >= 1:
         return "results"
 
     return "other"
@@ -620,7 +634,7 @@ def normalize_table_dict(table_data: Any) -> Dict[str, Any]:
     is_accepted = table_data.get("is_accepted")
     rejection_reason = table_data.get("rejection_reason")
     if is_accepted is None:
-        accepted_eval, reason_eval = evaluate_table_candidate(headers, rows)
+        accepted_eval, reason_eval = evaluate_table_candidate(headers, rows, caption=caption)
         is_accepted = accepted_eval
         rejection_reason = reason_eval
     else:
@@ -744,6 +758,7 @@ def extract_tables_from_pdf(
                     rows=cleaned_rows,
                     bbox=bbox,
                     page_height=page.rect.height,
+                    caption=caption,
                 )
 
                 classification = classify_table(headers, cleaned_rows, caption=caption)

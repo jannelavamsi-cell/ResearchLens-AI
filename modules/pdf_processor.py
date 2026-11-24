@@ -195,6 +195,7 @@ class PDFProcessor:
                                 rows=cleaned_rows,
                                 bbox=bbox,
                                 page_height=page.rect.height,
+                                caption=caption,
                             )
                             classification = classify_table(raw_headers, cleaned_rows, caption=caption)
                             is_res = (classification == "results")
