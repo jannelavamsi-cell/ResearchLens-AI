@@ -12,7 +12,13 @@ import pymupdf
 
 from core.logging_config import get_logger
 from core.schemas import PageSchema
-from modules.results_tables import is_likely_results_table, normalize_table_dict
+from modules.results_tables import (
+    classify_table,
+    evaluate_table_candidate,
+    extract_table_caption,
+    normalize_results_records,
+    normalize_table_dict,
+)
 from modules.text_preprocessing import clean_page_text, detect_repeated_headers_footers
 
 logger = get_logger("pdf_processor")
@@ -182,21 +188,58 @@ class PDFProcessor:
                                 [str(c).strip() if c is not None else "" for c in row]
                                 for row in df_data[1:]
                             ]
-                            is_res = is_likely_results_table(raw_headers, cleaned_rows)
-                            extracted_tables.append(
-                                normalize_table_dict(
-                                    {
-                                        "page_number": page_num,
-                                        "table_index": table_idx + 1,
-                                        "headers": raw_headers,
-                                        "rows": cleaned_rows,
-                                        "row_count": len(cleaned_rows),
-                                        "col_count": len(raw_headers),
-                                        "caption": "",
-                                        "is_results_table": is_res,
-                                    }
-                                )
+                            bbox = tuple(tab.bbox)
+                            caption = extract_table_caption(page, bbox)
+                            is_accepted, rejection_reason = evaluate_table_candidate(
+                                headers=raw_headers,
+                                rows=cleaned_rows,
+                                bbox=bbox,
+                                page_height=page.rect.height,
                             )
+                            classification = classify_table(raw_headers, cleaned_rows, caption=caption)
+                            is_res = (classification == "results")
+
+                            norm_res = {"records": [], "reliable": False, "note": "Non-results table"}
+                            if is_accepted and is_res:
+                                norm_res = normalize_results_records(
+                                    headers=raw_headers,
+                                    rows=cleaned_rows,
+                                    page_number=page_num,
+                                    caption=caption,
+                                )
+
+                            table_data = normalize_table_dict(
+                                {
+                                    "page_number": page_num,
+                                    "page": page_num,
+                                    "table_index": table_idx + 1,
+                                    "headers": raw_headers,
+                                    "header": raw_headers,
+                                    "rows": cleaned_rows,
+                                    "row_count": len(cleaned_rows),
+                                    "col_count": len(raw_headers),
+                                    "caption": caption,
+                                    "is_results_table": is_res,
+                                    "is_accepted": is_accepted,
+                                    "rejection_reason": rejection_reason,
+                                    "classification": classification,
+                                    "normalized_records": norm_res["records"],
+                                    "normalization_reliable": norm_res["reliable"],
+                                    "normalization_note": norm_res["note"],
+                                    "raw_table": {
+                                        "raw_headers": raw_headers,
+                                        "raw_rows": cleaned_rows,
+                                        "bbox": bbox,
+                                        "caption": caption,
+                                    },
+                                }
+                            )
+                            if is_accepted:
+                                extracted_tables.append(table_data)
+                            else:
+                                logger.debug(
+                                    f"Page {page_num} table {table_idx+1} rejected: {rejection_reason}"
+                                )
                 except Exception as e:
                     logger.debug(f"Table extraction skipped on page {page_num}: {e}")
 
