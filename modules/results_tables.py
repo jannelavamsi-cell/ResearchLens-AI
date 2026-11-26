@@ -288,36 +288,77 @@ def classify_table(
     return "other"
 
 
-def _is_multi_value_cell(val_str: str) -> bool:
-    """Check if a table cell contains multiple collapsed numeric values or mixed phrases."""
-    v = val_str.strip()
-    if not v:
+_NUMERIC_TOKEN_RE = re.compile(
+    r"^[-+]?\d+(?:\.\d+)?(?:\([+-]?\d+(?:\.\d+)?[↑↓%]?\))?%?$"
+)
+_GAIN_TOKEN_RE = re.compile(r"^\([+-]?\d+(?:\.\d+)?[↑↓%]?\)$")
+_DASH_TOKENS = frozenset({"–", "—", "-"})
+
+
+def _is_single_numeric_or_gain(t: str) -> bool:
+    """Check if a string is a single numeric value, percentage, or number with parenthetical gain."""
+    if not t:
         return False
-    # Contaminated with table subheaders
-    if any(term in v.lower() for term in ["match", "retrieval", "calibration", "model-based"]):
-        return True
-    tokens = [t for t in v.split() if re.match(r"^[-+]?\d+(?:\.\d+)?(?:\([+-]?\d+(?:\.\d+)?[↑↓%]?\))?%?$", t)]
-    if len(tokens) > 1:
-        return True
-    if len(v.split()) > 3 and len(tokens) >= 1:
-        return True
-    return False
+    return bool(re.match(r"^[-+]?\d+(?:\.\d+)?(?:\s*\([+-]?\d+(?:\.\d+)?[↑↓%]?\))?%?$", str(t).strip()))
+
+
+def _count_value_tokens(cell_str: str) -> int:
+    """
+    Count value tokens in a cell string.
+    Counts numeric values (including signed floats, percentages, and diff annotations)
+    and standalone null/missing indicators ('–', '—', '-').
+    """
+    text = str(cell_str or "").strip()
+    if not text:
+        return 0
+    words = text.split()
+    count = 0
+    i = 0
+    while i < len(words):
+        w = words[i]
+        if w in _DASH_TOKENS:
+            count += 1
+            i += 1
+            continue
+        if _NUMERIC_TOKEN_RE.match(w):
+            if i + 1 < len(words) and _GAIN_TOKEN_RE.match(words[i + 1]):
+                count += 1
+                i += 2
+                continue
+            count += 1
+            i += 1
+            continue
+        if _GAIN_TOKEN_RE.match(w):
+            count += 1
+            i += 1
+            continue
+        i += 1
+    return count
+
+
+def _is_multi_value_cell(val_str: str) -> bool:
+    """
+    Vocabulary-independent check if a table cell contains more than one numeric/value token.
+    Counts standalone '–', '—', '-' as values.
+    Does not use keyword lists like 'match', 'retrieval', 'calibration'.
+    """
+    return _count_value_tokens(val_str) > 1
 
 
 def _is_squashed_model(m_str: str) -> bool:
-    """Check if a model cell contains multiple squashed model names or section markers."""
-    m = m_str.strip()
-    if re.search(r"\bt\s*=", m, re.I):
+    """
+    Vocabulary-independent check for squashed identifiers/models:
+    multiple parameter tags, multiple citations/years, or multiple value tokens.
+    Does not use hardcoded model family lists, '§', 'ourswith', or 't =' regexes.
+    """
+    m = str(m_str or "").strip()
+    if not m:
+        return False
+    if len(re.findall(r"\b\d+(?:\.\d+)?[Bb]\b", m)) > 1:
         return True
-    if len(re.findall(r"\(\d+(?:\.\d+)?[Bb]\)", m)) > 1:
+    if len(re.findall(r"\b(?:19|20)\d{2}[a-z]?\b", m)) > 1:
         return True
-    if len(re.findall(r"\(\s*[A-Za-z]+\s+et\s+al\.", m)) > 1:
-        return True
-    families = ["llama", "phi", "gpt", "vicuna", "glm", "qwen", "mistral", "claude", "bert", "t5"]
-    found = [fam for fam in families if re.search(r"\b" + fam, m, re.I)]
-    if len(found) > 1:
-        return True
-    if "§" in m or "ourswith" in m.lower().replace(" ", ""):
+    if _count_value_tokens(m) > 1:
         return True
     return False
 
@@ -456,6 +497,9 @@ def normalize_results_records(
                     if _is_multi_value_cell(val):
                         unreliable_detected = True
                         continue
+                    if not _is_single_numeric_or_gain(val) and val not in _DASH_TOKENS:
+                        unreliable_detected = True
+                        continue
                     if ht["type"] == "dataset":
                         ds_name = ht["name"]
                         met_name = "Score (%)" if "%" in caption else "Performance"
@@ -482,6 +526,9 @@ def normalize_results_records(
                 if not val or val in invalid_values:
                     continue
                 if _is_multi_value_cell(val):
+                    unreliable_detected = True
+                    continue
+                if not _is_single_numeric_or_gain(val) and val not in _DASH_TOKENS:
                     unreliable_detected = True
                     continue
 
@@ -600,40 +647,136 @@ def _is_data_token(w: Tuple[Any, ...], line: List[Tuple[Any, ...]]) -> bool:
     return bool(re.match(r"^[-+]?\d+(?:\.\d+)?(?:\s*\([+-]?\d+(?:\.\d+)?[↑↓%]?\))?%?$", t))
 
 
-def is_merged_table_candidate(
+def analyze_merged_table_candidate(
     raw_headers: List[str],
     raw_rows: List[List[Any]],
     line_count: int = 0,
-) -> bool:
+    page: Optional[Any] = None,
+    bbox: Optional[Tuple[float, float, float, float]] = None,
+    table_obj: Optional[Any] = None,
+) -> Tuple[bool, List[str]]:
     """
-    Determines if a table extracted by PyMuPDF find_tables() exhibits merged/collapsed
-    rows or multiline text cells requiring word-position reconstruction.
+    Evaluates 3 vocabulary-independent signals to determine if a table exhibits merged
+    rows or multiline text cells requiring word-position reconstruction:
+    (1) More than one numeric token in a cell, counting '–' as a value
+    (2) Visual text lines inside table bbox greatly exceeding detected rows
+    (3) Cells whose words are spread over several distinct y-coordinates
     """
     if not raw_rows:
-        return False
-    for r in raw_rows:
+        return False, []
+
+    triggers: List[str] = []
+
+    # Signal 1: More than one numeric token in a cell (or squashed identifier)
+    for r_idx, r in enumerate(raw_rows):
         if not isinstance(r, list):
             continue
         for idx, c in enumerate(r):
             c_str = str(c or "").strip()
             if not c_str:
                 continue
-            words = c_str.split()
-            num_tokens = [
-                w for w in words
-                if re.match(r"^[-+]?\d+(?:\.\d+)?(?:\s*\([+-]?\d+(?:\.\d+)?[↑↓%]?\))?%?$", w)
-            ]
-            if idx > 0 and (len(num_tokens) > 1 or (len(words) > 3 and len(num_tokens) >= 1)):
-                return True
-            if c_str.count("\n") >= 2:
-                return True
-            if len(re.findall(r"\(\d+(?:\.\d+)?[Bb]\)", c_str)) > 1:
-                return True
-            if _is_squashed_model(c_str):
-                return True
-    if line_count >= 5 and len(raw_rows) < line_count * 0.6:
-        return True
-    return False
+            vt_count = _count_value_tokens(c_str)
+            if vt_count > 1:
+                triggers.append(
+                    f"Signal 1: multi-value cell (row {r_idx}, col {idx}, {vt_count} values: '{c_str[:25]}')"
+                )
+                break
+            if idx == 0 and _is_squashed_model(c_str):
+                triggers.append(
+                    f"Signal 1: squashed identifier (row {r_idx}, col {idx}: '{c_str[:25]}')"
+                )
+                break
+        if triggers and any("Signal 1" in t for t in triggers):
+            break
+
+    # Calculate visual lines if page and bbox are available
+    if page is not None and bbox is not None:
+        words = page.get_text("words", clip=pymupdf.Rect(bbox))
+        if words:
+            sorted_words = sorted(words, key=lambda w: (w[1], w[0]))
+            visual_lines: List[List[Any]] = []
+            for w in sorted_words:
+                placed = False
+                for line in visual_lines:
+                    line_y_avg = sum(x[1] for x in line) / len(line)
+                    line_h_avg = sum(x[3] - x[1] for x in line) / len(line)
+                    if abs(w[1] - line_y_avg) <= max(3.0, line_h_avg * 0.45):
+                        line.append(w)
+                        placed = True
+                        break
+                if not placed:
+                    visual_lines.append([w])
+            line_count = len(visual_lines)
+
+    # Signal 2: Text lines inside bbox greatly exceeding detected rows
+    detected_rows = len(raw_rows) + (1 if raw_headers else 0)
+    if detected_rows > 0 and line_count >= 5:
+        ratio = line_count / detected_rows
+        diff = line_count - detected_rows
+        if ratio >= 1.6 and diff >= 4:
+            triggers.append(
+                f"Signal 2: visual lines {line_count} greatly exceeds detected rows {detected_rows} (ratio={ratio:.2f}, diff={diff})"
+            )
+
+    # Signal 3: Cells whose words are spread over several distinct y-coordinates
+    cell_y_spread_found = False
+    if page is not None and table_obj is not None and hasattr(table_obj, "cells"):
+        for c_idx, cell_bbox in enumerate(table_obj.cells):
+            c_words = page.get_text("words", clip=pymupdf.Rect(cell_bbox))
+            if c_words and len(c_words) >= 2:
+                distinct_y = {round(w[1] / 3.0) * 3.0 for w in c_words}
+                y_span = max(w[3] for w in c_words) - min(w[1] for w in c_words)
+                avg_h = sum(w[3] - w[1] for w in c_words) / len(c_words)
+                if len(distinct_y) >= 3 or (len(distinct_y) >= 2 and y_span >= 2.5 * avg_h):
+                    triggers.append(
+                        f"Signal 3: cell {c_idx} words spread over {len(distinct_y)} y-coordinates (y_span={y_span:.1f}pt)"
+                    )
+                    cell_y_spread_found = True
+                    break
+
+    if not cell_y_spread_found:
+        for r_idx, r in enumerate(raw_rows):
+            if not isinstance(r, list):
+                continue
+            for c_idx, c in enumerate(r):
+                c_str = str(c or "").strip()
+                if c_str.count("\n") >= 2:
+                    triggers.append(
+                        f"Signal 3: multiline cell with {c_str.count(chr(10))} newlines (row {r_idx}, col {c_idx})"
+                    )
+                    cell_y_spread_found = True
+                    break
+            if cell_y_spread_found:
+                break
+
+    return len(triggers) > 0, triggers
+
+
+def is_merged_table_candidate(
+    raw_headers: List[str],
+    raw_rows: List[List[Any]],
+    line_count: int = 0,
+    page: Optional[Any] = None,
+    bbox: Optional[Tuple[float, float, float, float]] = None,
+    table_obj: Optional[Any] = None,
+) -> bool:
+    """
+    Determines if a table extracted by PyMuPDF find_tables() exhibits merged/collapsed
+    rows or multiline text cells requiring word-position reconstruction, using 3
+    vocabulary-independent signals:
+    (1) More than one numeric token in a cell, counting '–' as a value
+    (2) Visual text lines inside table bbox greatly exceeding detected rows
+    (3) Cells whose words are spread over several distinct y-coordinates
+    """
+    fired, _ = analyze_merged_table_candidate(
+        raw_headers=raw_headers,
+        raw_rows=raw_rows,
+        line_count=line_count,
+        page=page,
+        bbox=bbox,
+        table_obj=table_obj,
+    )
+    return fired
 
 
 def reconstruct_table_from_words(
@@ -1195,7 +1338,13 @@ def extract_tables_from_pdf(
                 headers = list(raw_headers)
                 cleaned_rows = list(raw_rows)
 
-                if is_merged_table_candidate(raw_headers, raw_rows):
+                if is_merged_table_candidate(
+                    raw_headers,
+                    raw_rows,
+                    page=page,
+                    bbox=bbox,
+                    table_obj=table,
+                ):
                     recon = reconstruct_table_from_words(
                         page=page,
                         bbox=bbox,

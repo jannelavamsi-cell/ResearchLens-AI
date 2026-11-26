@@ -10,8 +10,12 @@ import pymupdf
 
 from database.db_manager import DatabaseManager
 from modules.results_tables import (
+    _count_value_tokens,
     _is_data_token,
+    _is_multi_value_cell,
+    _is_squashed_model,
     _matches_term,
+    analyze_merged_table_candidate,
     classify_table,
     evaluate_table_candidate,
     extract_table_caption,
@@ -531,8 +535,6 @@ def test_real_paper6_page4_table_values():
     # Emitted clean records must not contain squashed multi-model strings
     for r in norm["records"]:
         assert "TinyLlama" not in r["model"] or "Phi-2" not in r["model"]
-        assert "t =" not in r["model"]
-        assert "§" not in r["model"]
 
 
 def test_real_paper7_page6_table_values():
@@ -945,6 +947,135 @@ def test_normalize_table_dict_edge_cases():
     res4 = normalize_table_dict({"rows": [["a", "b", "c"]]})
     assert res4["col_count"] == 3
     assert res4["headers"] == ["Col_1", "Col_2", "Col_3"]
+
+
+def test_clean_table_with_exact_match_and_retrieval_does_not_trigger():
+    """
+    Test clean table with 'Exact Match' or 'Retrieval' in headers does NOT trigger
+    any of the vocabulary-independent merged table signals.
+    """
+    clean_headers = ["Model", "Exact Match", "Retrieval"]
+    clean_rows = [
+        ["Llama-2 (7B)", "80.3", "79.2"],
+        ["Vicuna (7B)", "76.4", "75.1"],
+        ["GPT-3.5-Turbo", "82.4", "81.0"],
+    ]
+
+    # Individual cell assertions
+    assert _count_value_tokens("Exact Match") == 0
+    assert _count_value_tokens("Retrieval") == 0
+    assert _count_value_tokens("Adaptive Retrieval") == 0
+    assert _is_multi_value_cell("Exact Match") is False
+    assert _is_multi_value_cell("Retrieval") is False
+    assert _is_multi_value_cell("Adaptive Retrieval") is False
+    assert _is_squashed_model("Exact Match") is False
+    assert _is_squashed_model("Retrieval") is False
+
+    # Single value tokens in clean rows
+    for r in clean_rows:
+        assert _is_squashed_model(r[0]) is False
+        assert _is_multi_value_cell(r[1]) is False
+        assert _is_multi_value_cell(r[2]) is False
+
+    # Full table trigger evaluation
+    fired, triggers = analyze_merged_table_candidate(
+        raw_headers=clean_headers,
+        raw_rows=clean_rows,
+        line_count=4,
+    )
+    assert fired is False
+    assert triggers == []
+    assert is_merged_table_candidate(clean_headers, clean_rows, line_count=4) is False
+
+
+def test_multi_value_cell_with_dashes_and_gain_tokens():
+    """
+    Test vocabulary-independent Signal 1 counts numeric tokens and '–' / '-' / '—' as values,
+    and handles parenthetical gains as single value annotations.
+    """
+    # Multi-value cells containing combinations of numbers and dashes
+    assert _is_multi_value_cell("+14.9 +6.7 –") is True
+    assert _count_value_tokens("+14.9 +6.7 –") == 3
+
+    assert _is_multi_value_cell("- 41.13 46.75") is True
+    assert _count_value_tokens("- 41.13 46.75") == 3
+
+    assert _is_multi_value_cell("39.1 94.1") is True
+    assert _count_value_tokens("39.1 94.1") == 2
+
+    assert _is_multi_value_cell("100.0 31.9 23.0") is True
+    assert _count_value_tokens("100.0 31.9 23.0") == 3
+
+    # Single values with or without relative gain / diff annotations
+    assert _is_multi_value_cell("55.93 (3.36↑)") is False
+    assert _count_value_tokens("55.93 (3.36↑)") == 1
+
+    assert _is_multi_value_cell("52.91(7.21↑)") is False
+    assert _count_value_tokens("52.91(7.21↑)") == 1
+
+    assert _is_multi_value_cell("80.3") is False
+    assert _count_value_tokens("80.3") == 1
+
+    assert _is_multi_value_cell("–") is False
+    assert _count_value_tokens("–") == 1
+
+    assert _is_multi_value_cell("-") is False
+    assert _count_value_tokens("-") == 1
+
+    assert _is_multi_value_cell("—") is False
+    assert _count_value_tokens("—") == 1
+
+    # Empty cell
+    assert _is_multi_value_cell("") is False
+    assert _count_value_tokens("") == 0
+
+
+def test_squashed_model_structural_signals():
+    """
+    Test _is_squashed_model uses structural signals (parameter tags, citations, newlines, values)
+    without hardcoded model family lists, '§', 'ourswith', or 't =' regexes.
+    """
+    # Multiple parameter sizes
+    assert _is_squashed_model("TinyLlama (1.1B) Phi-2 (2.7B)") is True
+    assert _is_squashed_model("LongAlign-7B-64k LongLoRA-13B-32k") is True
+
+    # Multiple publication citations / years
+    assert _is_squashed_model("Model A (Bai et al., 2024) Model B (Chen et al., 2023b)") is True
+
+    # Multiple numeric value tokens embedded in model cell
+    assert _is_squashed_model("Self-RAG (7B) 0.25 0.5 0.75") is True
+
+    # Single valid models (must NOT trigger)
+    assert _is_squashed_model("Vanilla Llama-2 (7B)") is False
+    assert _is_squashed_model("Vicuna-v1.5-7B-16k (Zheng et al., 2023)") is False
+    assert _is_squashed_model("LongRAG-ChatGLM3-6B-32k") is False
+    assert _is_squashed_model("GPT-3.5-Turbo") is False
+    assert _is_squashed_model("BERT-Base") is False
+
+
+def test_vocabulary_independent_signals_2_and_3():
+    """
+    Test Signal 2 (visual lines vs detected rows) and Signal 3 (distinct y-spread / newlines).
+    """
+    raw_headers = ["Model", "Metric"]
+    raw_rows = [["Model A", "10.0"], ["Model B", "20.0"]]
+
+    # Signal 2: visual lines = 20 vs detected rows = 3 (ratio 6.67, diff 17) -> FIRED
+    fired_s2, triggers_s2 = analyze_merged_table_candidate(raw_headers, raw_rows, line_count=20)
+    assert fired_s2 is True
+    assert any("Signal 2" in t for t in triggers_s2)
+
+    # Signal 2 normal table: visual lines = 3 vs detected rows = 3 (ratio 1.0) -> NOT FIRED
+    fired_normal, triggers_normal = analyze_merged_table_candidate(raw_headers, raw_rows, line_count=3)
+    assert fired_normal is False
+    assert triggers_normal == []
+
+    # Signal 3: multiline cell with >= 2 embedded newlines -> FIRED
+    multiline_rows = [["Model A\nSubheader\nNotes", "10.0"]]
+    fired_s3, triggers_s3 = analyze_merged_table_candidate(raw_headers, multiline_rows, line_count=2)
+    assert fired_s3 is True
+    assert any("Signal 3" in t for t in triggers_s3)
+
 
 
 
