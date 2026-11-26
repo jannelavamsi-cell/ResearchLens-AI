@@ -10,6 +10,7 @@ import pymupdf
 
 from database.db_manager import DatabaseManager
 from modules.results_tables import (
+    _is_data_token,
     _matches_term,
     classify_table,
     evaluate_table_candidate,
@@ -17,10 +18,12 @@ from modules.results_tables import (
     extract_tables_from_pdf,
     get_paper_results_tables,
     is_likely_results_table,
+    is_merged_table_candidate,
     is_valid_table,
     normalize_results_records,
     normalize_table_dict,
     parse_table_semantics,
+    reconstruct_table_from_words,
 )
 
 # ---------------------------------------------------------------------------
@@ -558,4 +561,390 @@ def test_real_paper7_page6_table_values():
     assert "LongRAG-GLM-4" in models_extracted
     # Squashed multi-model row must be excluded from records
     assert not any("LongAlign" in m for m in models_extracted)
+
+
+# ---------------------------------------------------------------------------
+# 7. Word-Position Row Reconstruction & Spanning Headers Tests
+# ---------------------------------------------------------------------------
+
+def test_word_position_synthetic_spanning_headers_and_groups(tmp_path):
+    """
+    Test word-position row reconstruction on a synthetic unruled PDF table
+    featuring spanning headers, group rows, wrapped labels, and numbers with gains.
+    """
+    pdf_path = str(tmp_path / "synthetic_unruled.pdf")
+    doc = pymupdf.open()
+    page = doc.new_page(width=600, height=800)
+
+    # Caption above
+    page.insert_text((50, 60), "Table 1: Retrieval and match accuracy on Benchmark Dataset.")
+
+    # Top header line (spanning "Adaptive Retrieval" over col 1 & 2, "Always Retrieval" over col 3)
+    page.insert_text((180, 75), "Adaptive Retrieval")
+    page.insert_text((380, 70), "Always")
+    page.insert_text((380, 80), "Retrieval")
+
+    # Bottom header line
+    page.insert_text((50, 95), "Model")
+    page.insert_text((180, 95), "Retrieval")
+    page.insert_text((280, 95), "Match")
+    page.insert_text((380, 95), "Match")
+
+    # Section 1 Header
+    page.insert_text((50, 115), "Vanilla §3")
+
+    # Row 1
+    page.insert_text((50, 135), "TinyLlama (1.1B)")
+    page.insert_text((180, 135), "39.1")
+    page.insert_text((280, 135), "14.7")
+    page.insert_text((380, 135), "28.2")
+
+    # Row 2
+    page.insert_text((50, 155), "Phi-2 (2.7B)")
+    page.insert_text((180, 155), "94.1")
+    page.insert_text((280, 155), "35.0")
+    page.insert_text((380, 155), "36.4")
+
+    # Section 2 Header
+    page.insert_text((50, 175), "Ours TA-ARE §4")
+
+    # Row 3 (with relative gains and dashes)
+    page.insert_text((50, 195), "TinyLlama (1.1B)")
+    page.insert_text((180, 195), "54.1(+15.0)")
+    page.insert_text((280, 195), "19.0(+4.3)")
+    page.insert_text((380, 195), "28.2")
+
+    # Row 4 (Average gain)
+    page.insert_text((50, 215), "Average gain")
+    page.insert_text((180, 215), "+14.9")
+    page.insert_text((280, 215), "+6.7")
+    page.insert_text((380, 215), "-")
+
+    doc.save(pdf_path)
+    doc.close()
+
+    doc = pymupdf.open(pdf_path)
+    p = doc[0]
+    bbox = (45, 65, 450, 225)
+    raw_headers = ["Model", "Adaptive", "Retrieval", "Always Retrieval"]
+    raw_rows = [
+        ["TinyLlama (1.1B) Phi-2 (2.7B)", "39.1 94.1", "14.7 35.0", "28.2 36.4"],
+        ["Average gain", "+14.9", "+6.7", "-"],
+    ]
+
+    recon = reconstruct_table_from_words(
+        page=p,
+        bbox=bbox,
+        raw_headers=raw_headers,
+        raw_rows=raw_rows,
+        caption="Table 1: Retrieval and match accuracy on Benchmark Dataset.",
+        page_number=1,
+    )
+    doc.close()
+
+    assert recon is not None
+    assert recon["reconstruction_passed_gate"] is True
+    assert recon["reliable"] is True
+    assert len(recon["rows"]) == 4
+
+    headers = recon["headers"]
+    assert headers[0] == "Model"
+    assert "Retrieval" in headers[1]
+    assert "Match" in headers[2]
+    assert "Always Retrieval" in headers[3] and "Match" in headers[3]
+
+    # Verify groups
+    assert recon["row_groups"][0] == "Vanilla §3"
+    assert recon["row_groups"][1] == "Vanilla §3"
+    assert recon["row_groups"][2] == "Ours TA-ARE §4"
+    assert recon["row_groups"][3] == "Ours TA-ARE §4"
+
+    # Verify row values
+    assert recon["rows"][0] == ["TinyLlama (1.1B)", "39.1", "14.7", "28.2"]
+    assert recon["rows"][2] == ["TinyLlama (1.1B)", "54.1(+15.0)", "19.0(+4.3)", "28.2"]
+    assert recon["rows"][3] == ["Average gain", "+14.9", "+6.7", "-"]
+
+    # Verify normalized records have group field
+    records = recon["normalized_records"]
+    assert len(records) == 9  # 3 model rows * 3 cols (Average gain is excluded from records)
+    for r in records:
+        assert "group" in r
+        assert r["group"] in ["Vanilla §3", "Ours TA-ARE §4"]
+        assert r["page"] == 1
+
+
+def test_word_position_refusal_gate(tmp_path):
+    """
+    Test confidence gate refusal when row reconstruction produces non-numeric tokens
+    in numeric columns or ragged irregular shapes.
+    """
+    pdf_path = str(tmp_path / "synthetic_bad.pdf")
+    doc = pymupdf.open()
+    page = doc.new_page(width=600, height=800)
+
+    # Header
+    page.insert_text((50, 95), "Model")
+    page.insert_text((160, 95), "Score A")
+    page.insert_text((260, 95), "Score B")
+
+    # Row with non-numeric text in numeric column
+    page.insert_text((50, 120), "Model-A")
+    page.insert_text((160, 120), "INVALID_TEXT_ENTRY")
+    page.insert_text((260, 120), "45.2")
+
+    page.insert_text((50, 140), "Model-B")
+    page.insert_text((160, 140), "88.1")
+    page.insert_text((260, 140), "79.3")
+
+    doc.save(pdf_path)
+    doc.close()
+
+    doc = pymupdf.open(pdf_path)
+    p = doc[0]
+    bbox = (45, 90, 320, 150)
+    raw_headers = ["Model", "Score A", "Score B"]
+    raw_rows = [["Model-A\nModel-B", "INVALID_TEXT_ENTRY\n88.1", "45.2\n79.3"]]
+
+    # Reconstruct should refuse due to invalid non-numeric token
+    recon = reconstruct_table_from_words(
+        page=p,
+        bbox=bbox,
+        raw_headers=raw_headers,
+        raw_rows=raw_rows,
+        caption="Table 1: Bad table",
+        page_number=1,
+    )
+    doc.close()
+
+    assert recon is None
+
+
+def test_clean_ruled_table_unaltered():
+    """
+    Test clean ruled tables are detected as non-merged and not touched
+    (reconstruction_method == 'none').
+    """
+    # Clean table with distinct rows and columns
+    raw_headers = ["Model", "Accuracy", "F1 Score"]
+    raw_rows = [
+        ["BERT", "85.2", "84.1"],
+        ["RoBERTa", "89.1", "88.7"],
+        ["DeBERTa", "91.4", "91.0"],
+    ]
+
+    is_merged = is_merged_table_candidate(raw_headers, raw_rows, line_count=4)
+    assert is_merged is False
+
+
+def test_real_paper6_page4_word_position_reconstruction():
+    """
+    Regression test for real Paper 6 (2024.findings-acl.415) Page 4 Table 1.
+    Verifies that word-position reconstruction separates all 15 model rows,
+    preserves exact PDF values, and verifies the GPT-4* row from the text layer.
+    """
+    import os
+    pdf_paths = [
+        "data/uploaded_papers/default-collection/87cf21366266_2024.findings-acl.415-paper-6.pdf",
+        "data/uploaded_papers/2024.findings-acl.415-paper-6.pdf",
+    ]
+    pdf_path = next((p for p in pdf_paths if os.path.exists(p)), None)
+    if not pdf_path:
+        return
+
+    doc = pymupdf.open(pdf_path)
+    page = doc[3]  # Page 4 (0-indexed 3)
+    tables = page.find_tables().tables
+    assert len(tables) >= 1
+    table = tables[0]
+
+    raw_headers = table.extract()[0]
+    raw_rows = table.extract()[1:]
+    caption = "Table 1: Retrieval and match accuracy on RetrievalQA."
+
+    recon = reconstruct_table_from_words(
+        page=page,
+        bbox=tuple(table.bbox),
+        raw_headers=raw_headers,
+        raw_rows=raw_rows,
+        caption=caption,
+        page_number=4,
+    )
+    doc.close()
+
+    assert recon is not None
+    assert recon["reconstruction_passed_gate"] is True
+    assert recon["reliable"] is True
+    assert len(recon["rows"]) == 15
+
+    # Check composite headers
+    assert recon["headers"][0] == "Baselines (1,271)"
+    assert "Adaptive Retrieval" in recon["headers"][1] and "Retrieval" in recon["headers"][1]
+    assert "Adaptive Retrieval" in recon["headers"][2] and "Match" in recon["headers"][2]
+    assert "Always Retrieval" in recon["headers"][3] and "Match" in recon["headers"][3]
+
+    # Model rows
+    rows = recon["rows"]
+    # Row 4: TinyLlama (1.1B) under Vanilla
+    assert rows[4] == ["TinyLlama (1.1B)", "39.1", "14.7", "28.2"]
+    # Row 5: Phi-2 (2.7B) under Vanilla
+    assert rows[5] == ["Phi-2 (2.7B)", "94.1", "35.0", "36.4"]
+    # Row 6: Llama-2 (7B) under Vanilla
+    assert rows[6] == ["Llama-2 (7B)", "80.3", "26.1", "36.0"]
+    # Row 7: GPT-3.5 under Vanilla
+    assert rows[7] == ["GPT-3.5", "49.3", "20.8", "38.2"]
+    # Row 8: GPT-4* under Vanilla
+    assert rows[8] == ["GPT-4*", "67.6", "37.6", "46.0"]
+    # Verify GPT-4* middle cell in text layer is strictly 37.6
+    print("Real Paper 6 Page 4 GPT-4* row from text layer:", rows[8])
+    assert rows[8][2] == "37.6"
+
+    # Ours TA-ARE §4 section rows
+    assert rows[9] == ["TinyLlama (1.1B)", "54.1(+15.0)", "19.0(+4.3)", "28.2"]
+    assert rows[10] == ["Phi-2 (2.7B)", "95.5(+1.4)", "36.0(+1.0)", "36.4"]
+    assert rows[11] == ["Llama-2 (7B)", "86.0(+5.7)", "30.7(+4.6)", "36.0"]
+    assert rows[12] == ["GPT-3.5", "86.3(+37.0)", "35.8(+15.0)", "38.2"]
+    assert rows[13] == ["GPT-4*", "83.2(+15.6)", "46.4(+8.8)", "46.0"]
+
+    # Row 14: Average gain
+    assert rows[14] == ["Average gain", "+14.9", "+6.7", "–"]
+
+
+def test_real_paper7_page6_word_position_reconstruction():
+    """
+    Regression test for real Paper 7 (2024.emnlp-main.1259) Page 6 Table 1.
+    Verifies that 22 rows are separated and the 4 dataset columns are correctly mapped.
+    """
+    import os
+    pdf_paths = [
+        "data/uploaded_papers/default-collection/0a5f3581f839_2024.emnlp-main.1259-paper-7.pdf",
+        "data/uploaded_papers/2024.emnlp-main.1259-paper-7.pdf",
+    ]
+    pdf_path = next((p for p in pdf_paths if os.path.exists(p)), None)
+    if not pdf_path:
+        return
+
+    doc = pymupdf.open(pdf_path)
+    page = doc[5]  # Page 6 (0-indexed 5)
+    tables = page.find_tables().tables
+    assert len(tables) >= 1
+    table = tables[0]
+
+    raw_headers = table.extract()[0]
+    raw_rows = table.extract()[1:]
+    caption = "Table 1: Results (%) of overall performance on three multi-hop datasets."
+
+    recon = reconstruct_table_from_words(
+        page=page,
+        bbox=tuple(table.bbox),
+        raw_headers=raw_headers,
+        raw_rows=raw_rows,
+        caption=caption,
+        page_number=6,
+    )
+    doc.close()
+
+    assert recon is not None
+    assert recon["reconstruction_passed_gate"] is True
+    assert recon["reliable"] is True
+    assert len(recon["rows"]) == 22
+    assert recon["headers"] == ["Model", "HotpotQA", "2WikiMQA", "MusiQue", "Average"]
+
+    # Verify rows
+    rows = recon["rows"]
+    assert rows[0] == ["LongAlign-7B-64k (Llama2) (Bai et al., 2024)", "48.85", "28.56", "25.14", "34.18"]
+    assert rows[2] == ["CFIC-7B (Llama2) (Qian et al., 2024)", "34.00", "-", "14.70", "24.35"]
+    assert rows[21] == ["LongRAG-GLM-4", "62.11 (4.70↑)", "57.16 (4.25↑)", "38.40 (10.85↑)", "52.56 (6.60↑)"]
+
+    # Verify normalized records map HotpotQA, 2WikiMQA, MusiQue
+    rec_datasets = {r["dataset"] for r in recon["normalized_records"]}
+    assert "HotpotQA" in rec_datasets
+    assert "2WikiMQA" in rec_datasets
+    assert "MusiQue" in rec_datasets
+
+
+def test_is_merged_table_candidate_variants():
+    """Test various triggers for candidate detection."""
+    assert is_merged_table_candidate([], []) is False
+    assert is_merged_table_candidate(["Model", "Score"], [["Single\nLine\nWrapped", "10.5"]]) is True
+    assert is_merged_table_candidate(["Model", "Score"], [["Model A (7B) Model B (13B)", "10.5"]]) is True
+    assert is_merged_table_candidate(["Model", "Score"], [["Model A", "10.5 12.4"]]) is True
+    assert is_merged_table_candidate(["Model", "Score"], [["M1", "10.5"]], line_count=10) is True
+
+
+def test_is_data_token_coverage():
+    """Test helper _is_data_token against academic table tokens."""
+    # Data tokens
+    assert _is_data_token((0, 0, 10, 10, "54.1(+15.0)"), [(0, 0, 10, 10, "54.1(+15.0)")]) is True
+    assert _is_data_token((0, 0, 10, 10, "–"), [(0, 0, 10, 10, "–")]) is True
+    assert _is_data_token((0, 0, 10, 10, "-"), [(0, 0, 10, 10, "-")]) is True
+    # Non-data tokens
+    assert _is_data_token((0, 0, 10, 10, "(7B)"), [(0, 0, 10, 10, "(7B)")]) is False
+    assert _is_data_token((0, 0, 10, 10, "(1,271)"), [(0, 0, 10, 10, "(1,271)")]) is False
+    assert _is_data_token((0, 0, 10, 10, "none"), [(0, 0, 10, 10, "none")]) is False
+    # Threshold t = 0.5
+    line_t = [(0, 0, 0, 0, "t"), (0, 0, 0, 0, "="), (0, 0, 0, 0, "0.5")]
+    assert _is_data_token(line_t[2], line_t) is False
+
+
+def test_extract_tables_from_pdf_with_word_reconstruction(tmp_path):
+    """Test extract_tables_from_pdf on real Paper 6 with DB persistence and reconstruction."""
+    import os
+    pdf_paths = [
+        "data/uploaded_papers/default-collection/87cf21366266_2024.findings-acl.415-paper-6.pdf",
+        "data/uploaded_papers/2024.findings-acl.415-paper-6.pdf",
+    ]
+    pdf_path = next((p for p in pdf_paths if os.path.exists(p)), None)
+    if not pdf_path:
+        return
+
+    db_path = str(tmp_path / "test_p6.db")
+    db = DatabaseManager(db_path=db_path)
+    paper_id = db.insert_paper(
+        collection_id="default-collection",
+        file_hash="p6_hash_test",
+        filename="p6.pdf",
+        file_path=pdf_path,
+        title="Paper 6",
+        n_pages=5,
+    )
+
+    tables = extract_tables_from_pdf(pdf_path, paper_id, db=db)
+    assert len(tables) >= 1
+    # Check that Table 1 on page 4 was reconstructed
+    t1 = next((t for t in tables if t["page_number"] == 4 and t["table_index"] == 1), None)
+    assert t1 is not None
+    assert t1["reconstruction_method"] == "words"
+    assert t1["reconstruction_passed_gate"] is True
+    assert t1["normalization_reliable"] is True
+    assert len(t1["rows"]) == 15
+    assert len(t1["normalized_records"]) > 0
+
+
+def test_normalize_table_dict_edge_cases():
+    """Test normalize_table_dict with edge case formats and invalid types."""
+    # Non-dictionary input
+    res = normalize_table_dict("not_a_dict")
+    assert res["is_accepted"] is False
+    assert res["rejection_reason"] == "Non-dictionary input"
+
+    # Single string header
+    res2 = normalize_table_dict({"headers": "SingleHeader", "rows": [["val"]]})
+    assert res2["headers"] == ["SingleHeader"]
+
+    # String row_count and col_count
+    res3 = normalize_table_dict({
+        "headers": ["A", "B"],
+        "rows": [["1", "2"]],
+        "row_count": "invalid",
+        "col_count": "invalid",
+    })
+    assert res3["row_count"] == 1
+    assert res3["col_count"] == 2
+
+    # Missing headers but valid rows
+    res4 = normalize_table_dict({"rows": [["a", "b", "c"]]})
+    assert res4["col_count"] == 3
+    assert res4["headers"] == ["Col_1", "Col_2", "Col_3"]
+
+
 

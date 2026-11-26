@@ -327,10 +327,11 @@ def normalize_results_records(
     rows: List[List[Any]],
     page_number: int = 1,
     caption: str = "",
+    row_groups: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """
     Converts empirical results tables into structured records:
-    [{"model": str, "dataset": str, "metric": str, "value": str, "page": int}, ...]
+    [{"model": str, "group": str, "dataset": str, "metric": str, "value": str, "page": int}, ...]
 
     If the table structure does not permit unambiguous decomposition
     (e.g. squashed multiline text without row borders, irregular headers, missing identifiers),
@@ -405,9 +406,11 @@ def normalize_results_records(
     }
     invalid_values = {".", ".,", "–", "-", ""}
 
-    for row in rows:
+    for row_idx, row in enumerate(rows):
         if not isinstance(row, list) or len(row) <= model_col_idx:
             continue
+
+        group_val = row_groups[row_idx] if row_groups and row_idx < len(row_groups) else ""
 
         raw_model = str(row[model_col_idx]).strip()
         if not raw_model or raw_model.lower() in invalid_models or raw_model.startswith("#"):
@@ -462,6 +465,7 @@ def normalize_results_records(
 
                     records.append({
                         "model": m_name,
+                        "group": group_val,
                         "dataset": ds_name,
                         "metric": met_name,
                         "value": val,
@@ -490,6 +494,7 @@ def normalize_results_records(
 
                 records.append({
                     "model": m_name,
+                    "group": group_val,
                     "dataset": ds_name,
                     "metric": met_name,
                     "value": val,
@@ -573,6 +578,351 @@ def parse_table_semantics(
         "metric_columns": metric_cols,
         "model_column": model_col,
         "detected_benchmarks": detected_benchmarks,
+    }
+
+
+def _is_data_token(w: Tuple[Any, ...], line: List[Tuple[Any, ...]]) -> bool:
+    """Helper to detect empirical numbers, dashes, and gains in visual text lines."""
+    t = str(w[4]).strip()
+    if t in ["–", "-", "—"]:
+        return True
+    if re.match(r"^\(\d+(?:\.\d+)?[Bb]\)$", t):
+        return False
+    if re.match(r"^\(\d+(?:,\d+)?\)$", t):
+        return False
+    if t.lower() == "none":
+        return False
+    w_idx = line.index(w)
+    if w_idx >= 2 and str(line[w_idx - 2][4]).lower() == "t" and str(line[w_idx - 1][4]) == "=":
+        return False
+    if w_idx >= 1 and str(line[w_idx - 1][4]).lower().startswith("t="):
+        return False
+    return bool(re.match(r"^[-+]?\d+(?:\.\d+)?(?:\s*\([+-]?\d+(?:\.\d+)?[↑↓%]?\))?%?$", t))
+
+
+def is_merged_table_candidate(
+    raw_headers: List[str],
+    raw_rows: List[List[Any]],
+    line_count: int = 0,
+) -> bool:
+    """
+    Determines if a table extracted by PyMuPDF find_tables() exhibits merged/collapsed
+    rows or multiline text cells requiring word-position reconstruction.
+    """
+    if not raw_rows:
+        return False
+    for r in raw_rows:
+        if not isinstance(r, list):
+            continue
+        for idx, c in enumerate(r):
+            c_str = str(c or "").strip()
+            if not c_str:
+                continue
+            words = c_str.split()
+            num_tokens = [
+                w for w in words
+                if re.match(r"^[-+]?\d+(?:\.\d+)?(?:\s*\([+-]?\d+(?:\.\d+)?[↑↓%]?\))?%?$", w)
+            ]
+            if idx > 0 and (len(num_tokens) > 1 or (len(words) > 3 and len(num_tokens) >= 1)):
+                return True
+            if c_str.count("\n") >= 2:
+                return True
+            if len(re.findall(r"\(\d+(?:\.\d+)?[Bb]\)", c_str)) > 1:
+                return True
+            if _is_squashed_model(c_str):
+                return True
+    if line_count >= 5 and len(raw_rows) < line_count * 0.6:
+        return True
+    return False
+
+
+def reconstruct_table_from_words(
+    page: pymupdf.Page,
+    bbox: Tuple[float, float, float, float],
+    raw_headers: List[str],
+    raw_rows: List[List[Any]],
+    caption: str = "",
+    page_number: int = 1,
+) -> Optional[Dict[str, Any]]:
+    """
+    Reconstructs tables with merged multiline cells and spanning headers using
+    PyMuPDF word coordinates (page.get_text('words')).
+
+    Applies a strict confidence gate:
+    (a) Every reconstructed row has exactly the expected column count.
+    (b) Numeric columns contain valid numbers or standard missing value indicators.
+    (c) Reconstructed row count >= original row count.
+
+    Returns a dict with reconstructed headers, rows, row_groups, and normalized_records
+    if the gate passes; returns None if reconstruction is ambiguous or fails the gate.
+    """
+    expanded_bbox = (bbox[0] - 2, bbox[1] - 4, bbox[2] + 2, bbox[3] + 4)
+    words = page.get_text("words", clip=pymupdf.Rect(expanded_bbox))
+    if not words or len(words) < 6:
+        return None
+
+    # Group words into visual text lines by y-coordinate
+    sorted_words = sorted(words, key=lambda w: (w[1], w[0]))
+    lines: List[List[Tuple[Any, ...]]] = []
+    for w in sorted_words:
+        placed = False
+        for line in lines:
+            line_y_avg = sum(x[1] for x in line) / len(line)
+            line_h_avg = sum(x[3] - x[1] for x in line) / len(line)
+            if abs(w[1] - line_y_avg) <= max(3.0, line_h_avg * 0.45):
+                line.append(w)
+                placed = True
+                break
+        if not placed:
+            lines.append([w])
+
+    for line in lines:
+        line.sort(key=lambda w: w[0])
+    lines.sort(key=lambda line: min(w[1] for w in line))
+
+    if not is_merged_table_candidate(raw_headers, raw_rows, line_count=len(lines)):
+        return None
+
+    # Identify data lines and data words
+    data_lines = [ln for ln in lines if any(_is_data_token(w, ln) for w in ln)]
+    if not data_lines or len(data_lines) < 2:
+        return None
+
+    data_words = []
+    for ln in data_lines:
+        for w in ln:
+            if _is_data_token(w, ln):
+                data_words.append(w)
+
+    x_centers = sorted([(w[0] + w[2]) / 2 for w in data_words])
+    clusters: List[List[float]] = []
+    for xc in x_centers:
+        if not clusters or xc - clusters[-1][-1] > 18.0:
+            clusters.append([xc])
+        else:
+            clusters[-1].append(xc)
+
+    clusters = [cl for cl in clusters if len(cl) >= 2]
+    if len(clusters) < 1:
+        return None
+
+    num_cols = len(clusters)
+    col_centers = [sum(cl) / len(cl) for cl in clusters]
+
+    # Calculate column boundaries
+    dividers = []
+    for i in range(num_cols - 1):
+        dividers.append((col_centers[i] + col_centers[i + 1]) / 2.0)
+
+    # Label divider calculated strictly from data lines
+    leftmost_data_x0 = min(min(w[0] for w in ln if _is_data_token(w, ln)) for ln in data_lines)
+    label_words_on_data_lines = []
+    for ln in data_lines:
+        first_data_x0_in_line = min(w[0] for w in ln if _is_data_token(w, ln))
+        for w in ln:
+            if w[2] <= first_data_x0_in_line:
+                label_words_on_data_lines.append(w)
+
+    max_label_x1 = max(w[2] for w in label_words_on_data_lines) if label_words_on_data_lines else bbox[0]
+    label_divider = (max_label_x1 + leftmost_data_x0) / 2.0
+    col_divs = [label_divider] + dividers
+
+    def get_col_idx(w: Tuple[Any, ...]) -> int:
+        xc = (w[0] + w[2]) / 2
+        for idx, d in enumerate(col_divs):
+            if xc < d:
+                return idx
+        return len(col_divs)
+
+    # Header block: ends before first section header or data line
+    first_data_line_idx = lines.index(data_lines[0])
+    section_kw = [
+        "calibration", "model-based", "vanilla", "ours", "sft", "self-rag",
+        "ablation", "without sft", "long-context", "methods", "rag-base", "#"
+    ]
+    header_end_idx = first_data_line_idx
+    for idx in range(first_data_line_idx):
+        line_txt = " ".join(str(w[4]) for w in lines[idx]).lower()
+        if any(kw in line_txt for kw in section_kw):
+            header_end_idx = idx
+            break
+
+    header_lines = lines[:header_end_idx]
+
+    # Reconstruct headers
+    composite_headers = ["" for _ in range(num_cols + 1)]
+    if header_lines:
+        col0_words = []
+        for hl in header_lines:
+            for w in hl:
+                if get_col_idx(w) == 0:
+                    col0_words.append(str(w[4]))
+        composite_headers[0] = " ".join(col0_words).strip() or (raw_headers[0] if raw_headers else "Model")
+
+        bottom_hl = header_lines[-1]
+        sub_headers: List[List[str]] = [[] for _ in range(num_cols + 1)]
+        for w in bottom_hl:
+            c_i = get_col_idx(w)
+            sub_headers[c_i].append(str(w[4]))
+
+        top_hls = header_lines[:-1]
+
+        # Spanning phrases across multiple numeric columns
+        multi_col_phrases: List[Tuple[float, float, str]] = []
+        for thl in top_hls:
+            thl_sorted = sorted([w for w in thl if get_col_idx(w) > 0], key=lambda x: x[0])
+            if not thl_sorted:
+                continue
+            cur_p = [thl_sorted[0]]
+            for w in thl_sorted[1:]:
+                if w[0] - cur_p[-1][2] <= 10.0:
+                    cur_p.append(w)
+                else:
+                    multi_col_phrases.append((cur_p[0][0], cur_p[-1][2], " ".join(str(x[4]) for x in cur_p)))
+                    cur_p = [w]
+            multi_col_phrases.append((cur_p[0][0], cur_p[-1][2], " ".join(str(x[4]) for x in cur_p)))
+
+        spanning_by_col: Dict[int, str] = {}
+        for p_x0, p_x1, p_txt in multi_col_phrases:
+            covered_cols = [c_idx + 1 for c_idx, cc in enumerate(col_centers) if p_x0 - 5 <= cc <= p_x1 + 5]
+            if len(covered_cols) > 1:
+                for c_i in covered_cols:
+                    spanning_by_col[c_i] = p_txt
+
+        # Also collect vertically stacked words in top lines per column
+        col_top_stacked: Dict[int, List[str]] = {}
+        for thl in top_hls:
+            for w in thl:
+                c_i = get_col_idx(w)
+                if c_i > 0:
+                    col_top_stacked.setdefault(c_i, []).append(str(w[4]))
+
+        for col_i in range(1, num_cols + 1):
+            sub_str = " ".join(sub_headers[col_i]).strip()
+            top_str = ""
+            if col_i in spanning_by_col:
+                top_str = spanning_by_col[col_i]
+            elif col_i in col_top_stacked:
+                top_str = " ".join(col_top_stacked[col_i])
+
+            if top_str and sub_str and top_str != sub_str:
+                composite_headers[col_i] = f"{top_str} / {sub_str}"
+            elif sub_str:
+                composite_headers[col_i] = sub_str
+            elif top_str:
+                composite_headers[col_i] = top_str
+            else:
+                composite_headers[col_i] = f"Col_{col_i+1}"
+    else:
+        composite_headers = list(raw_headers)
+
+    # Process body lines
+    reconstructed_rows: List[List[str]] = []
+    row_groups: List[str] = []
+    current_group = ""
+    current_model_prefix = ""
+
+    for ln in lines[header_end_idx:]:
+        line_data = [w for w in ln if _is_data_token(w, ln)]
+        line_text = " ".join(str(w[4]) for w in ln)
+
+        # Section header or non-data line
+        if not line_data:
+            lower_txt = line_text.lower()
+            if any(kw in lower_txt for kw in ["based", "vanilla", "ours", "ta-are", "ablation", "baseline", "§", "sft", "methods", "rag-base", "#"]):
+                current_group = line_text.strip().replace("#", "").strip()
+                current_model_prefix = ""
+            elif len(ln) <= 2 and get_col_idx(ln[0]) == 0:
+                current_model_prefix = line_text.strip()
+            continue
+
+        # Data line
+        col_buckets: List[List[str]] = [[] for _ in range(num_cols + 1)]
+        for w in ln:
+            c_i = get_col_idx(w)
+            col_buckets[c_i].append(str(w[4]))
+
+        col_strings = [" ".join(b).strip() for b in col_buckets]
+
+        # Orphan single-column continuation: merge into preceding row with missing value in that column
+        if not col_strings[0] and sum(1 for c in col_strings[1:] if c) == 1 and reconstructed_rows:
+            for c_i in range(1, num_cols + 1):
+                if col_strings[c_i] and not reconstructed_rows[-1][c_i]:
+                    reconstructed_rows[-1][c_i] = col_strings[c_i]
+            continue
+
+        if current_model_prefix and (col_strings[0].startswith("t =") or col_strings[0].startswith("t=")):
+            col_strings[0] = f"{current_model_prefix} {col_strings[0]}"
+
+        reconstructed_rows.append(col_strings)
+        row_groups.append(current_group)
+
+    # Confidence Gate
+    if len(reconstructed_rows) < 2 or len(composite_headers) != num_cols + 1:
+        return None
+
+    valid_num_pattern = re.compile(r"^[-+]?\d+(?:\.\d+)?(?:\s*\([+-]?\d+(?:\.\d+)?[↑↓%]?\))?%?$")
+    for r in reconstructed_rows:
+        if len(r) != num_cols + 1:
+            return None
+        for val in r[1:]:
+            val_clean = val.strip()
+            if not val_clean or val_clean in ["–", "-", "—", "None", "N/A"]:
+                continue
+            if not valid_num_pattern.match(val_clean):
+                return None
+
+    if len(reconstructed_rows) < len(raw_rows):
+        return None
+
+    # Gate passed! Generate normalized empirical records if results table
+    known_benchmarks = [
+        "RetrievalQA", "HotpotQA", "2WikiMultiHopQA", "2WikiMQA", "MusiQue",
+        "QASPER", "SQuAD", "GLUE", "SuperGLUE", "ImageNet", "FreshQA", "RealTimeQA"
+    ]
+    detected_dataset = "Benchmark Dataset"
+    for bm in known_benchmarks:
+        if bm.lower() in caption.lower():
+            detected_dataset = bm
+            break
+
+    records = []
+    for r_idx, r in enumerate(reconstructed_rows):
+        model = r[0]
+        group = row_groups[r_idx] if r_idx < len(row_groups) else ""
+        if not model or model.lower() in ["average", "average gain", "averagegain", "total"]:
+            continue
+        for c_i in range(1, num_cols + 1):
+            val = r[c_i]
+            if not val or val in ["–", "-", "—"]:
+                continue
+            h_name = composite_headers[c_i]
+            is_bm = any(bm.lower() == h_name.lower() or bm.lower() in h_name.lower() for bm in known_benchmarks)
+            if is_bm and not any(m in h_name.lower() for m in ["retrieval", "match", "acc", "f1"]):
+                ds = h_name
+                met = "Score (%)" if "%" in caption else "Performance"
+            else:
+                ds = detected_dataset
+                met = h_name
+
+            records.append({
+                "model": model,
+                "group": group,
+                "dataset": ds,
+                "metric": met,
+                "value": val,
+                "page": page_number,
+            })
+
+    return {
+        "headers": composite_headers,
+        "rows": reconstructed_rows,
+        "row_groups": row_groups,
+        "normalized_records": records,
+        "reliable": True,
+        "note": f"Successfully reconstructed {len(reconstructed_rows)} rows from word positions with spanning headers and groups into {len(records)} structured results tuples.",
+        "reconstruction_method": "words",
+        "reconstruction_passed_gate": True,
     }
 
 
@@ -711,14 +1061,21 @@ def normalize_table_dict(table_data: Any) -> Dict[str, Any]:
     else:
         is_results = bool(is_results)
 
-    # Normalized records
+    # Normalized records & reconstruction metadata
     normalized_records = table_data.get("normalized_records")
     norm_reliable = table_data.get("normalization_reliable")
     norm_note = str(table_data.get("normalization_note") or "")
+    reconstruction_method = str(table_data.get("reconstruction_method") or "none")
+    reconstruction_passed_gate = bool(table_data.get("reconstruction_passed_gate", False))
+    row_groups = table_data.get("row_groups") or []
+    if not isinstance(row_groups, list):
+        row_groups = []
 
     if normalized_records is None:
         if is_results and is_accepted:
-            norm_res = normalize_results_records(headers, rows, page_number=page_num, caption=caption)
+            norm_res = normalize_results_records(
+                headers, rows, page_number=page_num, caption=caption, row_groups=row_groups
+            )
             normalized_records = norm_res["records"]
             norm_reliable = norm_res["reliable"]
             norm_note = norm_res["note"]
@@ -730,6 +1087,8 @@ def normalize_table_dict(table_data: Any) -> Dict[str, Any]:
     raw_table = table_data.get("raw_table") or {
         "headers": headers,
         "rows": rows,
+        "raw_headers": headers,
+        "raw_rows": rows,
         "caption": caption,
     }
 
@@ -748,6 +1107,9 @@ def normalize_table_dict(table_data: Any) -> Dict[str, Any]:
         "normalized_records": normalized_records,
         "normalization_reliable": norm_reliable,
         "normalization_note": norm_note,
+        "reconstruction_method": reconstruction_method,
+        "reconstruction_passed_gate": reconstruction_passed_gate,
+        "row_groups": row_groups,
         "raw_table": raw_table,
     }
 
@@ -818,12 +1180,39 @@ def extract_tables_from_pdf(
                 if not grid_rows:
                     continue
 
-                headers = [str(c).strip() if c else f"Col_{i+1}" for i, c in enumerate(grid_rows[0])]
-                cleaned_rows = grid_rows[1:] if len(grid_rows) > 1 else []
+                raw_headers = [str(c).strip() if c else f"Col_{i+1}" for i, c in enumerate(grid_rows[0])]
+                raw_rows = grid_rows[1:] if len(grid_rows) > 1 else []
 
                 # Extract bounding box and caption
                 bbox = tuple(table.bbox)
                 caption = extract_table_caption(page, bbox)
+
+                # Attempt word-position reconstruction for merged tables
+                recon = None
+                reconstruction_method = "none"
+                reconstruction_passed_gate = False
+                row_groups: List[str] = []
+                headers = list(raw_headers)
+                cleaned_rows = list(raw_rows)
+
+                if is_merged_table_candidate(raw_headers, raw_rows):
+                    recon = reconstruct_table_from_words(
+                        page=page,
+                        bbox=bbox,
+                        raw_headers=raw_headers,
+                        raw_rows=raw_rows,
+                        caption=caption,
+                        page_number=page_num,
+                    )
+                    if recon is not None:
+                        reconstruction_method = "words"
+                        reconstruction_passed_gate = True
+                        headers = recon["headers"]
+                        cleaned_rows = recon["rows"]
+                        row_groups = recon.get("row_groups", [])
+                    else:
+                        reconstruction_method = "words_refused"
+                        reconstruction_passed_gate = False
 
                 # Filter and evaluate
                 is_accepted, rejection_reason = evaluate_table_candidate(
@@ -843,12 +1232,26 @@ def extract_tables_from_pdf(
                     "note": "Rejected or non-results table",
                 }
                 if is_accepted and is_results:
-                    norm_data = normalize_results_records(
-                        headers=headers,
-                        rows=cleaned_rows,
-                        page_number=page_num,
-                        caption=caption,
-                    )
+                    if reconstruction_passed_gate and recon is not None:
+                        norm_data = {
+                            "records": recon["normalized_records"],
+                            "reliable": recon["reliable"],
+                            "note": recon["note"],
+                        }
+                    elif reconstruction_method == "words_refused":
+                        norm_data = {
+                            "records": [],
+                            "reliable": False,
+                            "note": "Table reconstruction refused by confidence gate; raw table preserved without guessing.",
+                        }
+                    else:
+                        norm_data = normalize_results_records(
+                            headers=headers,
+                            rows=cleaned_rows,
+                            page_number=page_num,
+                            caption=caption,
+                            row_groups=row_groups,
+                        )
 
                 table_data = normalize_table_dict({
                     "paper_id": paper_id,
@@ -866,9 +1269,14 @@ def extract_tables_from_pdf(
                     "normalized_records": norm_data["records"],
                     "normalization_reliable": norm_data["reliable"],
                     "normalization_note": norm_data["note"],
+                    "reconstruction_method": reconstruction_method,
+                    "reconstruction_passed_gate": reconstruction_passed_gate,
+                    "row_groups": row_groups,
                     "raw_table": {
-                        "raw_headers": headers,
-                        "raw_rows": cleaned_rows,
+                        "headers": raw_headers,
+                        "rows": raw_rows,
+                        "raw_headers": raw_headers,
+                        "raw_rows": raw_rows,
                         "bbox": bbox,
                         "caption": caption,
                     },
