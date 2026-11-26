@@ -1,0 +1,4591 @@
+[
+  {
+    "id": "db5b1c8e-7f6f-49a3-aea8-0454d10c8811",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 6,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 6,
+      "table_index": 1,
+      "headers": [
+        "Model",
+        "HotpotQA",
+        "2WikiMQA",
+        "MusiQue",
+        "Average"
+      ],
+      "rows": [
+        [
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "#",
+          "Long-Context LLM Methods #",
+          "",
+          "",
+          ""
+        ],
+        [
+          "LongAlign-7B-64k (Llama2) (Bai et al., 2024) LongLoRA-13B-32k (Llama2) (Chen et al., 2023b)",
+          "48.85 47.45",
+          "28.56 42.92",
+          "25.14 29.46",
+          "34.18 39.94"
+        ],
+        [
+          "",
+          "# Advanced RAG Methods #",
+          "",
+          "",
+          ""
+        ],
+        [
+          "CFIC-7B (Llama2) (Qian et al., 2024) CRAG (GPT-3.5-Turbo) (Yan et al., 2024) Self-RAG (GPT-3.5-Turbo) (Asai et al., 2023)",
+          "34.00 52.04 50.51",
+          "- 41.13 46.75",
+          "14.70 25.34 24.62",
+          "24.35 39.50 40.63"
+        ],
+        [
+          "",
+          "# RAG-Base (Vanilla RAG) #",
+          "",
+          "",
+          ""
+        ],
+        [
+          "Vicuna-v1.5-7B-16k (Zheng et al., 2023) Qwen-1.5-7B-32k (Bai et al., 2023a) Llama3-8B-8k (Touvron et al., 2023) ChatGLM3-6B-32k (Du et al., 2022) GPT-3.5-Turbo-16k GPT-3.5-Turbo Llama3-70B-8k GLM-4",
+          "38.63 45.70 48.25 52.57 50.17 52.31 52.33 57.41",
+          "27.92 34.69 43.47 42.56 45.32 43.44 50.23 52.91",
+          "15.68 25.08 19.66 25.51 21.84 25.22 25.49 27.55",
+          "27.41 35.16 37.13 40.21 39.11 40.32 42.68 45.96"
+        ],
+        [
+          "",
+          "# Ours with SFT #",
+          "",
+          "",
+          ""
+        ],
+        [
+          "LongRAG-Llama2-7B-4k LongRAG-Llama2-13B-4k LongRAG-Qwen-1.5-7B-32k LongRAG-Llama3-8B-8k LongRAG-Vicuna-v1.5-7B-16k",
+          "53.85 57.05 52.91 (7.21↑) 52.39 (4.14↑) 55.55 (16.92↑)",
+          "45.61 49.95 46.65 (11.96↑) 49.67 (6.20↑) 50.13 (22.21↑)",
+          "26.22 33.63 31.85 (6.77↑) 31.70 (12.04↑) 28.29 (12.61↑)",
+          "41.89 46.88 43.80 (8.65↑) 44.59 (7.46↑) 44.66 (17.25↑)"
+        ],
+        [
+          "LongRAG-ChatGLM3-6B-32k",
+          "55.93 (3.36↑)",
+          "54.85 (12.29↑)",
+          "33.00 (7.49↑)",
+          "47.93 (7.71↑)"
+        ],
+        [
+          "",
+          "# Ours without SFT",
+          "#",
+          "",
+          ""
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo",
+          "56.17 (3.86↑)",
+          "51.37 (7.93↑)",
+          "32.83 (7.61↑)",
+          "46.79 (6.47↑)"
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo-16k",
+          "59.11 (8.94↑)",
+          "51.25 (5.93↑)",
+          "30.37 (8.53↑)",
+          "46.91 (7.80↑)"
+        ],
+        [
+          "LongRAG-GLM-4",
+          "62.11 (4.70↑)",
+          "57.16 (4.25↑)",
+          "38.40 (10.85↑)",
+          "52.56 (6.60↑)"
+        ]
+      ],
+      "row_count": 14,
+      "col_count": 5,
+      "caption": "Table 1: Results (%) of overall performance on three multi-hop datasets. The \"Grey Areas\" represent different categories of baselines or our system with different fine-tuning settings. “Bold Font” denotes the highest absolute value, while \"Underlined Font\" expresses the highest relative gain value compared to Vanilla RAG. Ours with (or",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [
+        {
+          "model": "LongRAG-ChatGLM3-6B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Score (%)",
+          "value": "55.93 (3.36↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-ChatGLM3-6B-32k",
+          "dataset": "2WikiMQA",
+          "metric": "Score (%)",
+          "value": "54.85 (12.29↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-ChatGLM3-6B-32k",
+          "dataset": "MusiQue",
+          "metric": "Score (%)",
+          "value": "33.00 (7.49↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-ChatGLM3-6B-32k",
+          "dataset": "Benchmark Dataset",
+          "metric": "Average",
+          "value": "47.93 (7.71↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "HotpotQA",
+          "metric": "Score (%)",
+          "value": "56.17 (3.86↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "2WikiMQA",
+          "metric": "Score (%)",
+          "value": "51.37 (7.93↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "MusiQue",
+          "metric": "Score (%)",
+          "value": "32.83 (7.61↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "Benchmark Dataset",
+          "metric": "Average",
+          "value": "46.79 (6.47↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "HotpotQA",
+          "metric": "Score (%)",
+          "value": "59.11 (8.94↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "2WikiMQA",
+          "metric": "Score (%)",
+          "value": "51.25 (5.93↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "MusiQue",
+          "metric": "Score (%)",
+          "value": "30.37 (8.53↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "Benchmark Dataset",
+          "metric": "Average",
+          "value": "46.91 (7.80↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "HotpotQA",
+          "metric": "Score (%)",
+          "value": "62.11 (4.70↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "2WikiMQA",
+          "metric": "Score (%)",
+          "value": "57.16 (4.25↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "MusiQue",
+          "metric": "Score (%)",
+          "value": "38.40 (10.85↑)",
+          "page": 6
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "Benchmark Dataset",
+          "metric": "Average",
+          "value": "52.56 (6.60↑)",
+          "page": 6
+        }
+      ],
+      "normalization_reliable": false,
+      "normalization_note": "Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved.",
+      "raw_table": {
+        "raw_headers": [
+          "Model",
+          "HotpotQA",
+          "2WikiMQA",
+          "MusiQue",
+          "Average"
+        ],
+        "raw_rows": [
+          [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          [
+            "#",
+            "Long-Context LLM Methods #",
+            "",
+            "",
+            ""
+          ],
+          [
+            "LongAlign-7B-64k (Llama2) (Bai et al., 2024) LongLoRA-13B-32k (Llama2) (Chen et al., 2023b)",
+            "48.85 47.45",
+            "28.56 42.92",
+            "25.14 29.46",
+            "34.18 39.94"
+          ],
+          [
+            "",
+            "# Advanced RAG Methods #",
+            "",
+            "",
+            ""
+          ],
+          [
+            "CFIC-7B (Llama2) (Qian et al., 2024) CRAG (GPT-3.5-Turbo) (Yan et al., 2024) Self-RAG (GPT-3.5-Turbo) (Asai et al., 2023)",
+            "34.00 52.04 50.51",
+            "- 41.13 46.75",
+            "14.70 25.34 24.62",
+            "24.35 39.50 40.63"
+          ],
+          [
+            "",
+            "# RAG-Base (Vanilla RAG) #",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Vicuna-v1.5-7B-16k (Zheng et al., 2023) Qwen-1.5-7B-32k (Bai et al., 2023a) Llama3-8B-8k (Touvron et al., 2023) ChatGLM3-6B-32k (Du et al., 2022) GPT-3.5-Turbo-16k GPT-3.5-Turbo Llama3-70B-8k GLM-4",
+            "38.63 45.70 48.25 52.57 50.17 52.31 52.33 57.41",
+            "27.92 34.69 43.47 42.56 45.32 43.44 50.23 52.91",
+            "15.68 25.08 19.66 25.51 21.84 25.22 25.49 27.55",
+            "27.41 35.16 37.13 40.21 39.11 40.32 42.68 45.96"
+          ],
+          [
+            "",
+            "# Ours with SFT #",
+            "",
+            "",
+            ""
+          ],
+          [
+            "LongRAG-Llama2-7B-4k LongRAG-Llama2-13B-4k LongRAG-Qwen-1.5-7B-32k LongRAG-Llama3-8B-8k LongRAG-Vicuna-v1.5-7B-16k",
+            "53.85 57.05 52.91 (7.21↑) 52.39 (4.14↑) 55.55 (16.92↑)",
+            "45.61 49.95 46.65 (11.96↑) 49.67 (6.20↑) 50.13 (22.21↑)",
+            "26.22 33.63 31.85 (6.77↑) 31.70 (12.04↑) 28.29 (12.61↑)",
+            "41.89 46.88 43.80 (8.65↑) 44.59 (7.46↑) 44.66 (17.25↑)"
+          ],
+          [
+            "LongRAG-ChatGLM3-6B-32k",
+            "55.93 (3.36↑)",
+            "54.85 (12.29↑)",
+            "33.00 (7.49↑)",
+            "47.93 (7.71↑)"
+          ],
+          [
+            "",
+            "# Ours without SFT",
+            "#",
+            "",
+            ""
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo",
+            "56.17 (3.86↑)",
+            "51.37 (7.93↑)",
+            "32.83 (7.61↑)",
+            "46.79 (6.47↑)"
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo-16k",
+            "59.11 (8.94↑)",
+            "51.25 (5.93↑)",
+            "30.37 (8.53↑)",
+            "46.91 (7.80↑)"
+          ],
+          [
+            "LongRAG-GLM-4",
+            "62.11 (4.70↑)",
+            "57.16 (4.25↑)",
+            "38.40 (10.85↑)",
+            "52.56 (6.60↑)"
+          ]
+        ],
+        "bbox": [
+          83.39619445800781,
+          75.67835998535156,
+          511.8825988769531,
+          332.68707275390625
+        ],
+        "caption": "Table 1: Results (%) of overall performance on three multi-hop datasets. The \"Grey Areas\" represent different categories of baselines or our system with different fine-tuning settings. “Bold Font” denotes the highest absolute value, while \"Underlined Font\" expresses the highest relative gain value compared to Vanilla RAG. Ours with (or"
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "5fc6d1af-c7ea-42e4-bf5c-d86d1828ae48",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 7,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 7,
+      "table_index": 1,
+      "headers": [
+        "Dataset",
+        "HotpotQA",
+        "2WikiMQA",
+        "MuSiQue"
+      ],
+      "rows": [
+        [
+          "Num of Samples Avg. Length of p Num of p Avg. Length of P",
+          "200 1092 1715 9151",
+          "200 535 1464 4887",
+          "200 1032 1877 11214"
+        ]
+      ],
+      "row_count": 1,
+      "col_count": 4,
+      "caption": "Table 2: Statistics of experimental data. \"Avg.",
+      "is_results_table": false,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "dataset_statistics",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Rejected or non-results table",
+      "raw_table": {
+        "raw_headers": [
+          "Dataset",
+          "HotpotQA",
+          "2WikiMQA",
+          "MuSiQue"
+        ],
+        "raw_rows": [
+          [
+            "Num of Samples Avg. Length of p Num of p Avg. Length of P",
+            "200 1092 1715 9151",
+            "200 535 1464 4887",
+            "200 1032 1877 11214"
+          ]
+        ],
+        "bbox": [
+          81.97808074951172,
+          75.6703872680664,
+          278.0138854980469,
+          124.49166107177734
+        ],
+        "caption": "Table 2: Statistics of experimental data. \"Avg."
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "4cd15f9a-a8ab-4d5f-9d22-d92882691ef5",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 8,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 8,
+      "table_index": 1,
+      "headers": [
+        "R&B R&L Ext. Fil. E&F",
+        "R&B R&L Ext. Fil. E&F",
+        "R&B R&L Ext. Fil. E&F"
+      ],
+      "rows": [
+        [
+          "# Ours with SFT #",
+          "",
+          ""
+        ],
+        [
+          "LongRAG-ChatGLM3-6B-32k 51.48 54.00 55.11 49.01 55.93 LongRAG-Qwen1.5-7B-32k 47.09 48.93 50.01 49.11 52.91 LongRAG-Vicuna-v1.5-7B-16k 51.63 50.18 55.94 52.34 55.55 LongRAG-Llama3-8B-8k 49.45 50.49 51.77 49.64 52.39",
+          "46.61 44.83 52.53 48.83 54.85 35.78 37.72 42.91 38.98 46.65 39.45 43.53 49.57 41.18 50.13 39.79 37.16 46.80 42.40 49.67",
+          "24.02 33.15 32.98 27.70 33.00 20.68 26.08 29.60 23.67 31.85 25.30 25.28 29.25 29.29 28.29 21.41 22.90 33.85 23.47 31.70"
+        ],
+        [
+          "g # Ours without SFT #",
+          "",
+          ""
+        ],
+        [
+          "LongRAG-ChatGLM3-6B-32k 52.57 50.19 52.27 53.36 52.07 LongRAG-Qwen1.5-7B-32k 45.70 49.72 50.74 45.70 50.80 LongRAG-Vicuna-v1.5-7B-16k 38.63 30.40 41.45 39.46 43.18 LongRAG-Llama3-8B-8k 48.25 48.72 52.44 47.75 52.19 LongRAG-GPT-3.5-Turbo 52.31 55.30 56.15 50.90 56.17 LongRAG-GPT-3.5-Turbo-16k 50.17 49.80 60.06 47.10 59.11 LongRAG-GLM-4 57.41 56.17 61.07 55.41 62.11",
+          "42.56 42.92 44.95 42.94 46.08 34.69 35.49 39.53 34.69 39.53 27.92 20.68 29.08 29.89 30.85 43.47 41.59 47.34 42.22 46.57 43.44 45.03 53.29 39.49 51.37 45.32 46.80 51.26 46.38 51.25 52.91 48.98 54.22 52.61 57.16",
+          "25.51 29.93 28.27 23.99 28.45 25.08 25.85 29.75 25.08 29.75 15.68 8.92 17.65 16.35 16.98 19.66 23.62 24.90 20.06 24.99 25.22 28.65 32.17 24.41 32.83 21.84 25.09 26.92 22.02 30.37 27.55 27.85 38.54 28.12 38.40"
+        ]
+      ],
+      "row_count": 4,
+      "col_count": 3,
+      "caption": "Table 3: Results (%) of the ablation study. We compare five strategies in two dimensions: with and without SFT. We highlight the highest (\"Bold Font\") and second-highest (\"_\") results per model. R&B, R&L, Ext., Fil., and E&F represent RAG-Base, RAG-Long, Extractor, Filter, and Extractor & Filter, respectively.",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved.",
+      "raw_table": {
+        "raw_headers": [
+          "R&B R&L Ext. Fil. E&F",
+          "R&B R&L Ext. Fil. E&F",
+          "R&B R&L Ext. Fil. E&F"
+        ],
+        "raw_rows": [
+          [
+            "# Ours with SFT #",
+            "",
+            ""
+          ],
+          [
+            "LongRAG-ChatGLM3-6B-32k 51.48 54.00 55.11 49.01 55.93 LongRAG-Qwen1.5-7B-32k 47.09 48.93 50.01 49.11 52.91 LongRAG-Vicuna-v1.5-7B-16k 51.63 50.18 55.94 52.34 55.55 LongRAG-Llama3-8B-8k 49.45 50.49 51.77 49.64 52.39",
+            "46.61 44.83 52.53 48.83 54.85 35.78 37.72 42.91 38.98 46.65 39.45 43.53 49.57 41.18 50.13 39.79 37.16 46.80 42.40 49.67",
+            "24.02 33.15 32.98 27.70 33.00 20.68 26.08 29.60 23.67 31.85 25.30 25.28 29.25 29.29 28.29 21.41 22.90 33.85 23.47 31.70"
+          ],
+          [
+            "g # Ours without SFT #",
+            "",
+            ""
+          ],
+          [
+            "LongRAG-ChatGLM3-6B-32k 52.57 50.19 52.27 53.36 52.07 LongRAG-Qwen1.5-7B-32k 45.70 49.72 50.74 45.70 50.80 LongRAG-Vicuna-v1.5-7B-16k 38.63 30.40 41.45 39.46 43.18 LongRAG-Llama3-8B-8k 48.25 48.72 52.44 47.75 52.19 LongRAG-GPT-3.5-Turbo 52.31 55.30 56.15 50.90 56.17 LongRAG-GPT-3.5-Turbo-16k 50.17 49.80 60.06 47.10 59.11 LongRAG-GLM-4 57.41 56.17 61.07 55.41 62.11",
+            "42.56 42.92 44.95 42.94 46.08 34.69 35.49 39.53 34.69 39.53 27.92 20.68 29.08 29.89 30.85 43.47 41.59 47.34 42.22 46.57 43.44 45.03 53.29 39.49 51.37 45.32 46.80 51.26 46.38 51.25 52.91 48.98 54.22 52.61 57.16",
+            "25.51 29.93 28.27 23.99 28.45 25.08 25.85 29.75 25.08 29.75 15.68 8.92 17.65 16.35 16.98 19.66 23.62 24.90 20.06 24.99 25.22 28.65 32.17 24.41 32.83 21.84 25.09 26.92 22.02 30.37 27.55 27.85 38.54 28.12 38.40"
+          ]
+        ],
+        "bbox": [
+          72.0385971069336,
+          89.35844421386719,
+          523.2410888671875,
+          217.2938232421875
+        ],
+        "caption": "Table 3: Results (%) of the ablation study. We compare five strategies in two dimensions: with and without SFT. We highlight the highest (\"Bold Font\") and second-highest (\"_\") results per model. R&B, R&L, Ext., Fil., and E&F represent RAG-Base, RAG-Long, Extractor, Filter, and Extractor & Filter, respectively."
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "cc1bad87-dbaa-4801-bbd0-21dd995d5112",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 14,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 14,
+      "table_index": 1,
+      "headers": [
+        "Datasets",
+        "ReAct (GPT-3.5-Turbo)"
+      ],
+      "rows": [
+        [
+          "HotpotQA 2WikiMultihopQA",
+          "49.60 41.86"
+        ],
+        [
+          "MuSiQue",
+          "27.81"
+        ],
+        [
+          "Average",
+          "39.76"
+        ]
+      ],
+      "row_count": 3,
+      "col_count": 2,
+      "caption": "Table 4: Results of ReAct. that when knowledge needs to be retrieved, the rele- vant information is retrieved from our local corpus",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [
+        {
+          "model": "MuSiQue",
+          "dataset": "Benchmark Dataset",
+          "metric": "ReAct (GPT-3.5-Turbo)",
+          "value": "27.81",
+          "page": 14
+        }
+      ],
+      "normalization_reliable": false,
+      "normalization_note": "Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved.",
+      "raw_table": {
+        "raw_headers": [
+          "Datasets",
+          "ReAct (GPT-3.5-Turbo)"
+        ],
+        "raw_rows": [
+          [
+            "HotpotQA 2WikiMultihopQA",
+            "49.60 41.86"
+          ],
+          [
+            "MuSiQue",
+            "27.81"
+          ],
+          [
+            "Average",
+            "39.76"
+          ]
+        ],
+        "bbox": [
+          330.11346435546875,
+          76.45675659179688,
+          500.4527587890625,
+          139.774658203125
+        ],
+        "caption": "Table 4: Results of ReAct. that when knowledge needs to be retrieved, the rele- vant information is retrieved from our local corpus"
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "c08895e0-4825-4c95-aeb2-5cc6167a9226",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 15,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 15,
+      "table_index": 1,
+      "headers": [
+        "Datasets",
+        "Self-RAG (GPT-3.5-Turbo)"
+      ],
+      "rows": [
+        [
+          "HotpotQA",
+          "44.99"
+        ],
+        [
+          "2WikiMultihopQA",
+          "19.79"
+        ],
+        [
+          "MuSiQue",
+          "23.49"
+        ]
+      ],
+      "row_count": 3,
+      "col_count": 2,
+      "caption": "Table 5: Results of Self-RAG via the second strategy. swer the question, it is supplemented with external knowledge retrieved from the web. For a fair re-",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [
+        {
+          "model": "HotpotQA",
+          "dataset": "Benchmark Dataset",
+          "metric": "Self-RAG (GPT-3.5-Turbo)",
+          "value": "44.99",
+          "page": 15
+        },
+        {
+          "model": "2WikiMultihopQA",
+          "dataset": "Benchmark Dataset",
+          "metric": "Self-RAG (GPT-3.5-Turbo)",
+          "value": "19.79",
+          "page": 15
+        },
+        {
+          "model": "MuSiQue",
+          "dataset": "Benchmark Dataset",
+          "metric": "Self-RAG (GPT-3.5-Turbo)",
+          "value": "23.49",
+          "page": 15
+        }
+      ],
+      "normalization_reliable": true,
+      "normalization_note": "Successfully decomposed into 3 structured results tuples.",
+      "raw_table": {
+        "raw_headers": [
+          "Datasets",
+          "Self-RAG (GPT-3.5-Turbo)"
+        ],
+        "raw_rows": [
+          [
+            "HotpotQA",
+            "44.99"
+          ],
+          [
+            "2WikiMultihopQA",
+            "19.79"
+          ],
+          [
+            "MuSiQue",
+            "23.49"
+          ]
+        ],
+        "bbox": [
+          88.28041076660156,
+          76.45675659179688,
+          271.7113952636719,
+          122.75607299804688
+        ],
+        "caption": "Table 5: Results of Self-RAG via the second strategy. swer the question, it is supplemented with external knowledge retrieved from the web. For a fair re-"
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "2966be1a-f193-4596-bae6-81ad41eac42a",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 17,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 17,
+      "table_index": 1,
+      "headers": [
+        "Model",
+        "Col_2",
+        "HotpotQA",
+        "Col_4",
+        "Col_5"
+      ],
+      "rows": [
+        [
+          "",
+          "200*7",
+          "200*12",
+          "500*3",
+          "500*5"
+        ],
+        [
+          "# RAG Base",
+          "(Vanilla RAG) #",
+          "",
+          "",
+          ""
+        ],
+        [
+          "ChatGLM3-6B-32k",
+          "52.57",
+          "53.10",
+          "47.72",
+          "51.17"
+        ],
+        [
+          "Qwen1.5-7B-32k",
+          "45.70",
+          "49.20",
+          "44.43",
+          "44.16"
+        ],
+        [
+          "Vicuna-v1.5-7B-16k",
+          "38.63",
+          "34.35",
+          "37.23",
+          "35.32"
+        ],
+        [
+          "Llama3-8B-8k",
+          "48.25",
+          "51.69",
+          "47.12",
+          "50.88"
+        ],
+        [
+          "GPT-3.5-Turbo",
+          "52.31",
+          "55.21",
+          "52.84",
+          "51.21"
+        ],
+        [
+          "GPT-3.5-Turbo-16k",
+          "50.17",
+          "53.58",
+          "48.02",
+          "48.84"
+        ],
+        [
+          "Llama3-70B-8k",
+          "52.33",
+          "53.53",
+          "49.51",
+          "51.38"
+        ],
+        [
+          "GLM-4",
+          "57.41",
+          "59.55",
+          "53.71",
+          "58.45"
+        ],
+        [
+          "# Ours",
+          "with SFT #",
+          "",
+          "",
+          ""
+        ],
+        [
+          "LongRAG-ChatGLM3-6B-32k",
+          "55.93",
+          "54.36",
+          "50.72",
+          "54.67"
+        ],
+        [
+          "LongRAG-Qwen1.5-7B-32k",
+          "52.91",
+          "52.27",
+          "49.70",
+          "50.69"
+        ],
+        [
+          "LongRAG-Vicuna-v1.5-7B-16k",
+          "55.55",
+          "54.79",
+          "52.26",
+          "52.89"
+        ],
+        [
+          "LongRAG-Llama3-8B-8k",
+          "52.39",
+          "52.00",
+          "49.05",
+          "54.62"
+        ],
+        [
+          "# Ours without SFT #",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo",
+          "56.17",
+          "56.06",
+          "55.63",
+          "55.11"
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo-16k",
+          "59.11",
+          "51.55",
+          "48.45",
+          "55.57"
+        ],
+        [
+          "LongRAG-GLM-4",
+          "62.11",
+          "60.55",
+          "55.36",
+          "61.14"
+        ]
+      ],
+      "row_count": 19,
+      "col_count": 5,
+      "caption": "Table 6: Overall performance of our LongRAG on HotpotQA dataset.",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [
+        {
+          "model": "ChatGLM3-6B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "52.57",
+          "page": 17
+        },
+        {
+          "model": "ChatGLM3-6B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "53.10",
+          "page": 17
+        },
+        {
+          "model": "ChatGLM3-6B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "47.72",
+          "page": 17
+        },
+        {
+          "model": "ChatGLM3-6B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "51.17",
+          "page": 17
+        },
+        {
+          "model": "Qwen1.5-7B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "45.70",
+          "page": 17
+        },
+        {
+          "model": "Qwen1.5-7B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "49.20",
+          "page": 17
+        },
+        {
+          "model": "Qwen1.5-7B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "44.43",
+          "page": 17
+        },
+        {
+          "model": "Qwen1.5-7B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "44.16",
+          "page": 17
+        },
+        {
+          "model": "Vicuna-v1.5-7B-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "38.63",
+          "page": 17
+        },
+        {
+          "model": "Vicuna-v1.5-7B-16k",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "34.35",
+          "page": 17
+        },
+        {
+          "model": "Vicuna-v1.5-7B-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "37.23",
+          "page": 17
+        },
+        {
+          "model": "Vicuna-v1.5-7B-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "35.32",
+          "page": 17
+        },
+        {
+          "model": "Llama3-8B-8k",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "48.25",
+          "page": 17
+        },
+        {
+          "model": "Llama3-8B-8k",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "51.69",
+          "page": 17
+        },
+        {
+          "model": "Llama3-8B-8k",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "47.12",
+          "page": 17
+        },
+        {
+          "model": "Llama3-8B-8k",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "50.88",
+          "page": 17
+        },
+        {
+          "model": "GPT-3.5-Turbo",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "52.31",
+          "page": 17
+        },
+        {
+          "model": "GPT-3.5-Turbo",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "55.21",
+          "page": 17
+        },
+        {
+          "model": "GPT-3.5-Turbo",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "52.84",
+          "page": 17
+        },
+        {
+          "model": "GPT-3.5-Turbo",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "51.21",
+          "page": 17
+        },
+        {
+          "model": "GPT-3.5-Turbo-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "50.17",
+          "page": 17
+        },
+        {
+          "model": "GPT-3.5-Turbo-16k",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "53.58",
+          "page": 17
+        },
+        {
+          "model": "GPT-3.5-Turbo-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "48.02",
+          "page": 17
+        },
+        {
+          "model": "GPT-3.5-Turbo-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "48.84",
+          "page": 17
+        },
+        {
+          "model": "Llama3-70B-8k",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "52.33",
+          "page": 17
+        },
+        {
+          "model": "Llama3-70B-8k",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "53.53",
+          "page": 17
+        },
+        {
+          "model": "Llama3-70B-8k",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "49.51",
+          "page": 17
+        },
+        {
+          "model": "Llama3-70B-8k",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "51.38",
+          "page": 17
+        },
+        {
+          "model": "GLM-4",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "57.41",
+          "page": 17
+        },
+        {
+          "model": "GLM-4",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "59.55",
+          "page": 17
+        },
+        {
+          "model": "GLM-4",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "53.71",
+          "page": 17
+        },
+        {
+          "model": "GLM-4",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "58.45",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-ChatGLM3-6B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "55.93",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-ChatGLM3-6B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "54.36",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-ChatGLM3-6B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "50.72",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-ChatGLM3-6B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "54.67",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-Qwen1.5-7B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "52.91",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-Qwen1.5-7B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "52.27",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-Qwen1.5-7B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "49.70",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-Qwen1.5-7B-32k",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "50.69",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-Vicuna-v1.5-7B-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "55.55",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-Vicuna-v1.5-7B-16k",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "54.79",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-Vicuna-v1.5-7B-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "52.26",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-Vicuna-v1.5-7B-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "52.89",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-Llama3-8B-8k",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "52.39",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-Llama3-8B-8k",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "52.00",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-Llama3-8B-8k",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "49.05",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-Llama3-8B-8k",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "54.62",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "56.17",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "56.06",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "55.63",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "55.11",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "59.11",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "51.55",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "48.45",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "55.57",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "62.11",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "60.55",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "55.36",
+          "page": 17
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "HotpotQA",
+          "metric": "Col_5",
+          "value": "61.14",
+          "page": 17
+        }
+      ],
+      "normalization_reliable": true,
+      "normalization_note": "Successfully decomposed into 60 structured results tuples.",
+      "raw_table": {
+        "raw_headers": [
+          "Model",
+          "Col_2",
+          "HotpotQA",
+          "Col_4",
+          "Col_5"
+        ],
+        "raw_rows": [
+          [
+            "",
+            "200*7",
+            "200*12",
+            "500*3",
+            "500*5"
+          ],
+          [
+            "# RAG Base",
+            "(Vanilla RAG) #",
+            "",
+            "",
+            ""
+          ],
+          [
+            "ChatGLM3-6B-32k",
+            "52.57",
+            "53.10",
+            "47.72",
+            "51.17"
+          ],
+          [
+            "Qwen1.5-7B-32k",
+            "45.70",
+            "49.20",
+            "44.43",
+            "44.16"
+          ],
+          [
+            "Vicuna-v1.5-7B-16k",
+            "38.63",
+            "34.35",
+            "37.23",
+            "35.32"
+          ],
+          [
+            "Llama3-8B-8k",
+            "48.25",
+            "51.69",
+            "47.12",
+            "50.88"
+          ],
+          [
+            "GPT-3.5-Turbo",
+            "52.31",
+            "55.21",
+            "52.84",
+            "51.21"
+          ],
+          [
+            "GPT-3.5-Turbo-16k",
+            "50.17",
+            "53.58",
+            "48.02",
+            "48.84"
+          ],
+          [
+            "Llama3-70B-8k",
+            "52.33",
+            "53.53",
+            "49.51",
+            "51.38"
+          ],
+          [
+            "GLM-4",
+            "57.41",
+            "59.55",
+            "53.71",
+            "58.45"
+          ],
+          [
+            "# Ours",
+            "with SFT #",
+            "",
+            "",
+            ""
+          ],
+          [
+            "LongRAG-ChatGLM3-6B-32k",
+            "55.93",
+            "54.36",
+            "50.72",
+            "54.67"
+          ],
+          [
+            "LongRAG-Qwen1.5-7B-32k",
+            "52.91",
+            "52.27",
+            "49.70",
+            "50.69"
+          ],
+          [
+            "LongRAG-Vicuna-v1.5-7B-16k",
+            "55.55",
+            "54.79",
+            "52.26",
+            "52.89"
+          ],
+          [
+            "LongRAG-Llama3-8B-8k",
+            "52.39",
+            "52.00",
+            "49.05",
+            "54.62"
+          ],
+          [
+            "# Ours without SFT #",
+            "",
+            "",
+            "",
+            ""
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo",
+            "56.17",
+            "56.06",
+            "55.63",
+            "55.11"
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo-16k",
+            "59.11",
+            "51.55",
+            "48.45",
+            "55.57"
+          ],
+          [
+            "LongRAG-GLM-4",
+            "62.11",
+            "60.55",
+            "55.36",
+            "61.14"
+          ]
+        ],
+        "bbox": [
+          146.8553466796875,
+          258.107666015625,
+          448.42822265625,
+          565.1553955078125
+        ],
+        "caption": "Table 6: Overall performance of our LongRAG on HotpotQA dataset."
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "c9a9f9c4-aac9-4723-ba86-c5e8e21ca53b",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 18,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 18,
+      "table_index": 1,
+      "headers": [
+        "Model",
+        "2WikiMultiHopQA",
+        "Col_3"
+      ],
+      "rows": [
+        [
+          "",
+          "200*7 200*12",
+          "500*3 500*5"
+        ],
+        [
+          "# RAG Base",
+          "(Vanilla RAG) #",
+          ""
+        ],
+        [
+          "ChatGLM3-6B-32k",
+          "42.56 38.71",
+          "40.65 42.34"
+        ],
+        [
+          "Qwen1.5-7B-32k",
+          "34.69 34.79",
+          "34.47 35.24"
+        ],
+        [
+          "Vicuna-v1.5-7B-16k",
+          "27.92 26.39",
+          "32.76 26.36"
+        ],
+        [
+          "Llama3-8B-8k",
+          "43.47 40.01",
+          "30.48 41.44"
+        ],
+        [
+          "GPT-3.5-Turbo",
+          "43.44 40.06",
+          "43.17 39.69"
+        ],
+        [
+          "GPT-3.5-Turbo-16k",
+          "45.32 39.09",
+          "43.31 42.49"
+        ],
+        [
+          "Llama3-70B-8k",
+          "50.23 48.91",
+          "46.61 50.10"
+        ],
+        [
+          "GLM-4",
+          "52.91 52.37",
+          "49.48 51.06"
+        ],
+        [
+          "# Ours",
+          "with SFT #",
+          ""
+        ],
+        [
+          "LongRAG-ChatGLM3-6B-32k",
+          "54.85 58.51",
+          "49.28 53.51"
+        ],
+        [
+          "LongRAG-Qwen1.5-7B-32k",
+          "46.65 45.23",
+          "42.96 44.55"
+        ],
+        [
+          "LongRAG-Vicuna-v1.5-7B-16k",
+          "50.13 50.93",
+          "47.45 48.02"
+        ],
+        [
+          "LongRAG-Llama3-8B-8k",
+          "49.67 51.41",
+          "43.80 49.70"
+        ],
+        [
+          "# Ours without SFT #",
+          "",
+          ""
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo",
+          "51.37 56.55",
+          "48.16 48.60"
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo-16k",
+          "51.25 45.45",
+          "44.08 44.21"
+        ],
+        [
+          "LongRAG-GLM-4",
+          "57.16 52.90",
+          "44.93 50.05"
+        ]
+      ],
+      "row_count": 19,
+      "col_count": 3,
+      "caption": "Table 7: Overall performance of our LongRAG on 2WikiMultiHopQA dataset.",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved.",
+      "raw_table": {
+        "raw_headers": [
+          "Model",
+          "2WikiMultiHopQA",
+          "Col_3"
+        ],
+        "raw_rows": [
+          [
+            "",
+            "200*7 200*12",
+            "500*3 500*5"
+          ],
+          [
+            "# RAG Base",
+            "(Vanilla RAG) #",
+            ""
+          ],
+          [
+            "ChatGLM3-6B-32k",
+            "42.56 38.71",
+            "40.65 42.34"
+          ],
+          [
+            "Qwen1.5-7B-32k",
+            "34.69 34.79",
+            "34.47 35.24"
+          ],
+          [
+            "Vicuna-v1.5-7B-16k",
+            "27.92 26.39",
+            "32.76 26.36"
+          ],
+          [
+            "Llama3-8B-8k",
+            "43.47 40.01",
+            "30.48 41.44"
+          ],
+          [
+            "GPT-3.5-Turbo",
+            "43.44 40.06",
+            "43.17 39.69"
+          ],
+          [
+            "GPT-3.5-Turbo-16k",
+            "45.32 39.09",
+            "43.31 42.49"
+          ],
+          [
+            "Llama3-70B-8k",
+            "50.23 48.91",
+            "46.61 50.10"
+          ],
+          [
+            "GLM-4",
+            "52.91 52.37",
+            "49.48 51.06"
+          ],
+          [
+            "# Ours",
+            "with SFT #",
+            ""
+          ],
+          [
+            "LongRAG-ChatGLM3-6B-32k",
+            "54.85 58.51",
+            "49.28 53.51"
+          ],
+          [
+            "LongRAG-Qwen1.5-7B-32k",
+            "46.65 45.23",
+            "42.96 44.55"
+          ],
+          [
+            "LongRAG-Vicuna-v1.5-7B-16k",
+            "50.13 50.93",
+            "47.45 48.02"
+          ],
+          [
+            "LongRAG-Llama3-8B-8k",
+            "49.67 51.41",
+            "43.80 49.70"
+          ],
+          [
+            "# Ours without SFT #",
+            "",
+            ""
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo",
+            "51.37 56.55",
+            "48.16 48.60"
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo-16k",
+            "51.25 45.45",
+            "44.08 44.21"
+          ],
+          [
+            "LongRAG-GLM-4",
+            "57.16 52.90",
+            "44.93 50.05"
+          ]
+        ],
+        "bbox": [
+          146.8553466796875,
+          258.107666015625,
+          448.42822265625,
+          565.1553955078125
+        ],
+        "caption": "Table 7: Overall performance of our LongRAG on 2WikiMultiHopQA dataset."
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "dc388792-5c33-44ea-91db-f206d197d59d",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 19,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 19,
+      "table_index": 1,
+      "headers": [
+        "Model",
+        "Col_2",
+        "MusiQue",
+        "Col_4",
+        "Col_5"
+      ],
+      "rows": [
+        [
+          "",
+          "200*7",
+          "200*12",
+          "500*3",
+          "500*5"
+        ],
+        [
+          "# RAG Base",
+          "(Vanilla RAG) #",
+          "",
+          "",
+          ""
+        ],
+        [
+          "ChatGLM3-6B-32k",
+          "25.51",
+          "25.91",
+          "24.31",
+          "25.63"
+        ],
+        [
+          "Qwen1.5-7B-32k",
+          "25.08",
+          "23.51",
+          "21.08",
+          "22.05"
+        ],
+        [
+          "Vicuna-v1.5-7B-16k",
+          "15.68",
+          "14.55",
+          "16.05",
+          "13.89"
+        ],
+        [
+          "Llama3-8B-8k",
+          "19.66",
+          "23.65",
+          "19.33",
+          "22.51"
+        ],
+        [
+          "GPT-3.5-Turbo",
+          "25.22",
+          "28.23",
+          "25.34",
+          "27.06"
+        ],
+        [
+          "GPT-3.5-Turbo-16k",
+          "21.84",
+          "25.41",
+          "24.80",
+          "23.79"
+        ],
+        [
+          "Llama3-70B-8k",
+          "25.49",
+          "27.72",
+          "23.05",
+          "24.13"
+        ],
+        [
+          "GLM-4",
+          "27.55",
+          "33.93",
+          "27.92",
+          "27.56"
+        ],
+        [
+          "# Ours",
+          "with SFT #",
+          "",
+          "",
+          ""
+        ],
+        [
+          "LongRAG-ChatGLM3-6B-32k",
+          "33.00",
+          "33.12",
+          "30.09",
+          "31.98"
+        ],
+        [
+          "LongRAG-Qwen1.5-7B-32k",
+          "31.85",
+          "32.22",
+          "27.25",
+          "25.84"
+        ],
+        [
+          "LongRAG-Vicuna-v1.5-7B-16k",
+          "28.29",
+          "33.76",
+          "29.42",
+          "29.89"
+        ],
+        [
+          "LongRAG-Llama3-8B-8k",
+          "31.70",
+          "38.19",
+          "33.90",
+          "29.57"
+        ],
+        [
+          "# Ours without SFT #",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo",
+          "32.83",
+          "32.64",
+          "29.83",
+          "28.03"
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo-16k",
+          "30.37",
+          "32.11",
+          "28.96",
+          "26.58"
+        ],
+        [
+          "LongRAG-GLM-4",
+          "38.40",
+          "39.68",
+          "34.67",
+          "33.05"
+        ]
+      ],
+      "row_count": 19,
+      "col_count": 5,
+      "caption": "Table 8: Overall performance of our LongRAG on MusiQue dataset.",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [
+        {
+          "model": "ChatGLM3-6B-32k",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "25.51",
+          "page": 19
+        },
+        {
+          "model": "ChatGLM3-6B-32k",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "25.91",
+          "page": 19
+        },
+        {
+          "model": "ChatGLM3-6B-32k",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "24.31",
+          "page": 19
+        },
+        {
+          "model": "ChatGLM3-6B-32k",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "25.63",
+          "page": 19
+        },
+        {
+          "model": "Qwen1.5-7B-32k",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "25.08",
+          "page": 19
+        },
+        {
+          "model": "Qwen1.5-7B-32k",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "23.51",
+          "page": 19
+        },
+        {
+          "model": "Qwen1.5-7B-32k",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "21.08",
+          "page": 19
+        },
+        {
+          "model": "Qwen1.5-7B-32k",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "22.05",
+          "page": 19
+        },
+        {
+          "model": "Vicuna-v1.5-7B-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "15.68",
+          "page": 19
+        },
+        {
+          "model": "Vicuna-v1.5-7B-16k",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "14.55",
+          "page": 19
+        },
+        {
+          "model": "Vicuna-v1.5-7B-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "16.05",
+          "page": 19
+        },
+        {
+          "model": "Vicuna-v1.5-7B-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "13.89",
+          "page": 19
+        },
+        {
+          "model": "Llama3-8B-8k",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "19.66",
+          "page": 19
+        },
+        {
+          "model": "Llama3-8B-8k",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "23.65",
+          "page": 19
+        },
+        {
+          "model": "Llama3-8B-8k",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "19.33",
+          "page": 19
+        },
+        {
+          "model": "Llama3-8B-8k",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "22.51",
+          "page": 19
+        },
+        {
+          "model": "GPT-3.5-Turbo",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "25.22",
+          "page": 19
+        },
+        {
+          "model": "GPT-3.5-Turbo",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "28.23",
+          "page": 19
+        },
+        {
+          "model": "GPT-3.5-Turbo",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "25.34",
+          "page": 19
+        },
+        {
+          "model": "GPT-3.5-Turbo",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "27.06",
+          "page": 19
+        },
+        {
+          "model": "GPT-3.5-Turbo-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "21.84",
+          "page": 19
+        },
+        {
+          "model": "GPT-3.5-Turbo-16k",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "25.41",
+          "page": 19
+        },
+        {
+          "model": "GPT-3.5-Turbo-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "24.80",
+          "page": 19
+        },
+        {
+          "model": "GPT-3.5-Turbo-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "23.79",
+          "page": 19
+        },
+        {
+          "model": "Llama3-70B-8k",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "25.49",
+          "page": 19
+        },
+        {
+          "model": "Llama3-70B-8k",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "27.72",
+          "page": 19
+        },
+        {
+          "model": "Llama3-70B-8k",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "23.05",
+          "page": 19
+        },
+        {
+          "model": "Llama3-70B-8k",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "24.13",
+          "page": 19
+        },
+        {
+          "model": "GLM-4",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "27.55",
+          "page": 19
+        },
+        {
+          "model": "GLM-4",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "33.93",
+          "page": 19
+        },
+        {
+          "model": "GLM-4",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "27.92",
+          "page": 19
+        },
+        {
+          "model": "GLM-4",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "27.56",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-ChatGLM3-6B-32k",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "33.00",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-ChatGLM3-6B-32k",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "33.12",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-ChatGLM3-6B-32k",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "30.09",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-ChatGLM3-6B-32k",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "31.98",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-Qwen1.5-7B-32k",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "31.85",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-Qwen1.5-7B-32k",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "32.22",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-Qwen1.5-7B-32k",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "27.25",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-Qwen1.5-7B-32k",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "25.84",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-Vicuna-v1.5-7B-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "28.29",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-Vicuna-v1.5-7B-16k",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "33.76",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-Vicuna-v1.5-7B-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "29.42",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-Vicuna-v1.5-7B-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "29.89",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-Llama3-8B-8k",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "31.70",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-Llama3-8B-8k",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "38.19",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-Llama3-8B-8k",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "33.90",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-Llama3-8B-8k",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "29.57",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "32.83",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "32.64",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "29.83",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "28.03",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "30.37",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "32.11",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "28.96",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "26.58",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "38.40",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "39.68",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "34.67",
+          "page": 19
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "MusiQue",
+          "metric": "Col_5",
+          "value": "33.05",
+          "page": 19
+        }
+      ],
+      "normalization_reliable": true,
+      "normalization_note": "Successfully decomposed into 60 structured results tuples.",
+      "raw_table": {
+        "raw_headers": [
+          "Model",
+          "Col_2",
+          "MusiQue",
+          "Col_4",
+          "Col_5"
+        ],
+        "raw_rows": [
+          [
+            "",
+            "200*7",
+            "200*12",
+            "500*3",
+            "500*5"
+          ],
+          [
+            "# RAG Base",
+            "(Vanilla RAG) #",
+            "",
+            "",
+            ""
+          ],
+          [
+            "ChatGLM3-6B-32k",
+            "25.51",
+            "25.91",
+            "24.31",
+            "25.63"
+          ],
+          [
+            "Qwen1.5-7B-32k",
+            "25.08",
+            "23.51",
+            "21.08",
+            "22.05"
+          ],
+          [
+            "Vicuna-v1.5-7B-16k",
+            "15.68",
+            "14.55",
+            "16.05",
+            "13.89"
+          ],
+          [
+            "Llama3-8B-8k",
+            "19.66",
+            "23.65",
+            "19.33",
+            "22.51"
+          ],
+          [
+            "GPT-3.5-Turbo",
+            "25.22",
+            "28.23",
+            "25.34",
+            "27.06"
+          ],
+          [
+            "GPT-3.5-Turbo-16k",
+            "21.84",
+            "25.41",
+            "24.80",
+            "23.79"
+          ],
+          [
+            "Llama3-70B-8k",
+            "25.49",
+            "27.72",
+            "23.05",
+            "24.13"
+          ],
+          [
+            "GLM-4",
+            "27.55",
+            "33.93",
+            "27.92",
+            "27.56"
+          ],
+          [
+            "# Ours",
+            "with SFT #",
+            "",
+            "",
+            ""
+          ],
+          [
+            "LongRAG-ChatGLM3-6B-32k",
+            "33.00",
+            "33.12",
+            "30.09",
+            "31.98"
+          ],
+          [
+            "LongRAG-Qwen1.5-7B-32k",
+            "31.85",
+            "32.22",
+            "27.25",
+            "25.84"
+          ],
+          [
+            "LongRAG-Vicuna-v1.5-7B-16k",
+            "28.29",
+            "33.76",
+            "29.42",
+            "29.89"
+          ],
+          [
+            "LongRAG-Llama3-8B-8k",
+            "31.70",
+            "38.19",
+            "33.90",
+            "29.57"
+          ],
+          [
+            "# Ours without SFT #",
+            "",
+            "",
+            "",
+            ""
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo",
+            "32.83",
+            "32.64",
+            "29.83",
+            "28.03"
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo-16k",
+            "30.37",
+            "32.11",
+            "28.96",
+            "26.58"
+          ],
+          [
+            "LongRAG-GLM-4",
+            "38.40",
+            "39.68",
+            "34.67",
+            "33.05"
+          ]
+        ],
+        "bbox": [
+          146.8553466796875,
+          258.107666015625,
+          448.42822265625,
+          565.1553955078125
+        ],
+        "caption": "Table 8: Overall performance of our LongRAG on MusiQue dataset."
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "5ce7c62a-b1e4-4312-9c93-7748023157f1",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 20,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 20,
+      "table_index": 1,
+      "headers": [
+        "Col_1",
+        "Col_2",
+        "HotpotQA",
+        "Col_4"
+      ],
+      "rows": [
+        [
+          "Generator",
+          "R&B",
+          "E&F w/o SFT",
+          "E&F w/ SFT (ChatGLM3-6b-32k)"
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo-16k",
+          "50.17",
+          "59.11",
+          "57.82"
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo",
+          "52.31",
+          "56.17",
+          "59.09"
+        ],
+        [
+          "LongRAG-GLM-4",
+          "57.41",
+          "62.11",
+          "59.20"
+        ]
+      ],
+      "row_count": 4,
+      "col_count": 4,
+      "caption": "Table 9: Analysis of the component transferability of E&F on HotpotQA dataset.",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [
+        {
+          "model": "Generator",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "R&B",
+          "page": 20
+        },
+        {
+          "model": "Generator",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "E&F w/o SFT",
+          "page": 20
+        },
+        {
+          "model": "Generator",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "E&F w/ SFT (ChatGLM3-6b-32k)",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "50.17",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "59.11",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "57.82",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "52.31",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "56.17",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "59.09",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "HotpotQA",
+          "metric": "Col_2",
+          "value": "57.41",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "HotpotQA",
+          "metric": "Performance",
+          "value": "62.11",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "HotpotQA",
+          "metric": "Col_4",
+          "value": "59.20",
+          "page": 20
+        }
+      ],
+      "normalization_reliable": true,
+      "normalization_note": "Successfully decomposed into 12 structured results tuples.",
+      "raw_table": {
+        "raw_headers": [
+          "Col_1",
+          "Col_2",
+          "HotpotQA",
+          "Col_4"
+        ],
+        "raw_rows": [
+          [
+            "Generator",
+            "R&B",
+            "E&F w/o SFT",
+            "E&F w/ SFT (ChatGLM3-6b-32k)"
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo-16k",
+            "50.17",
+            "59.11",
+            "57.82"
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo",
+            "52.31",
+            "56.17",
+            "59.09"
+          ],
+          [
+            "LongRAG-GLM-4",
+            "57.41",
+            "62.11",
+            "59.20"
+          ]
+        ],
+        "bbox": [
+          95.82478332519531,
+          130.5492706298828,
+          496.4173278808594,
+          219.39813232421875
+        ],
+        "caption": "Table 9: Analysis of the component transferability of E&F on HotpotQA dataset."
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "13d2842c-7aa9-4c05-92f8-4376a333534c",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 20,
+    "table_index": 2,
+    "table_data": {
+      "page_number": 20,
+      "table_index": 2,
+      "headers": [
+        "Col_1",
+        "Col_2",
+        "2WikiMultiHopQA",
+        "Col_4"
+      ],
+      "rows": [
+        [
+          "Generator",
+          "R&B",
+          "E&F w/o SFT",
+          "E&F w/ SFT (ChatGLM3-6b-32k)"
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo-16k",
+          "45.32",
+          "51.25",
+          "57.86"
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo",
+          "43.44",
+          "51.37",
+          "54.62"
+        ],
+        [
+          "LongRAG-GLM-4",
+          "52.91",
+          "57.16",
+          "55.96"
+        ]
+      ],
+      "row_count": 4,
+      "col_count": 4,
+      "caption": "Table 10: Analysis of the component transferability of E&F on 2WikiMultiHopQA dataset.",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [
+        {
+          "model": "Generator",
+          "dataset": "2WikiMultiHopQA",
+          "metric": "Col_2",
+          "value": "R&B",
+          "page": 20
+        },
+        {
+          "model": "Generator",
+          "dataset": "2WikiMultiHopQA",
+          "metric": "Performance",
+          "value": "E&F w/o SFT",
+          "page": 20
+        },
+        {
+          "model": "Generator",
+          "dataset": "2WikiMultiHopQA",
+          "metric": "Col_4",
+          "value": "E&F w/ SFT (ChatGLM3-6b-32k)",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "2WikiMultiHopQA",
+          "metric": "Col_2",
+          "value": "45.32",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "2WikiMultiHopQA",
+          "metric": "Performance",
+          "value": "51.25",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "2WikiMultiHopQA",
+          "metric": "Col_4",
+          "value": "57.86",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "2WikiMultiHopQA",
+          "metric": "Col_2",
+          "value": "43.44",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "2WikiMultiHopQA",
+          "metric": "Performance",
+          "value": "51.37",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "2WikiMultiHopQA",
+          "metric": "Col_4",
+          "value": "54.62",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "2WikiMultiHopQA",
+          "metric": "Col_2",
+          "value": "52.91",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "2WikiMultiHopQA",
+          "metric": "Performance",
+          "value": "57.16",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "2WikiMultiHopQA",
+          "metric": "Col_4",
+          "value": "55.96",
+          "page": 20
+        }
+      ],
+      "normalization_reliable": true,
+      "normalization_note": "Successfully decomposed into 12 structured results tuples.",
+      "raw_table": {
+        "raw_headers": [
+          "Col_1",
+          "Col_2",
+          "2WikiMultiHopQA",
+          "Col_4"
+        ],
+        "raw_rows": [
+          [
+            "Generator",
+            "R&B",
+            "E&F w/o SFT",
+            "E&F w/ SFT (ChatGLM3-6b-32k)"
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo-16k",
+            "45.32",
+            "51.25",
+            "57.86"
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo",
+            "43.44",
+            "51.37",
+            "54.62"
+          ],
+          [
+            "LongRAG-GLM-4",
+            "52.91",
+            "57.16",
+            "55.96"
+          ]
+        ],
+        "bbox": [
+          95.82478332519531,
+          367.20709228515625,
+          496.4173278808594,
+          456.0559387207031
+        ],
+        "caption": "Table 10: Analysis of the component transferability of E&F on 2WikiMultiHopQA dataset."
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "38c64235-e20f-4840-9ae9-b25c2274de2b",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 20,
+    "table_index": 3,
+    "table_data": {
+      "page_number": 20,
+      "table_index": 3,
+      "headers": [
+        "Col_1",
+        "Col_2",
+        "MusiQue",
+        "Col_4"
+      ],
+      "rows": [
+        [
+          "Generator",
+          "R&B",
+          "E&F w/o SFT",
+          "E&F w/ SFT (ChatGLM3-6b-32k)"
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo-16k",
+          "21.84",
+          "30.37",
+          "34.52"
+        ],
+        [
+          "LongRAG-GPT-3.5-Turbo",
+          "25.22",
+          "32.83",
+          "34.28"
+        ],
+        [
+          "LongRAG-GLM-4",
+          "27.55",
+          "38.40",
+          "36.89"
+        ]
+      ],
+      "row_count": 4,
+      "col_count": 4,
+      "caption": "Table 11: Analysis of the component transferability of E&F on MusiQue dataset.",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [
+        {
+          "model": "Generator",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "R&B",
+          "page": 20
+        },
+        {
+          "model": "Generator",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "E&F w/o SFT",
+          "page": 20
+        },
+        {
+          "model": "Generator",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "E&F w/ SFT (ChatGLM3-6b-32k)",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "21.84",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "30.37",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo-16k",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "34.52",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "25.22",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "32.83",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GPT-3.5-Turbo",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "34.28",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "MusiQue",
+          "metric": "Col_2",
+          "value": "27.55",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "MusiQue",
+          "metric": "Performance",
+          "value": "38.40",
+          "page": 20
+        },
+        {
+          "model": "LongRAG-GLM-4",
+          "dataset": "MusiQue",
+          "metric": "Col_4",
+          "value": "36.89",
+          "page": 20
+        }
+      ],
+      "normalization_reliable": true,
+      "normalization_note": "Successfully decomposed into 12 structured results tuples.",
+      "raw_table": {
+        "raw_headers": [
+          "Col_1",
+          "Col_2",
+          "MusiQue",
+          "Col_4"
+        ],
+        "raw_rows": [
+          [
+            "Generator",
+            "R&B",
+            "E&F w/o SFT",
+            "E&F w/ SFT (ChatGLM3-6b-32k)"
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo-16k",
+            "21.84",
+            "30.37",
+            "34.52"
+          ],
+          [
+            "LongRAG-GPT-3.5-Turbo",
+            "25.22",
+            "32.83",
+            "34.28"
+          ],
+          [
+            "LongRAG-GLM-4",
+            "27.55",
+            "38.40",
+            "36.89"
+          ]
+        ],
+        "bbox": [
+          95.82478332519531,
+          603.8649291992188,
+          496.4173278808594,
+          692.7137451171875
+        ],
+        "caption": "Table 11: Analysis of the component transferability of E&F on MusiQue dataset."
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "77713c59-2a56-4572-9ced-13d800df30f8",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 21,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 21,
+      "table_index": 1,
+      "headers": [
+        "Col_1",
+        "Col_2",
+        "HotpotQA",
+        "Col_4",
+        "Col_5"
+      ],
+      "rows": [
+        [
+          "Model",
+          "R&B",
+          "R&L",
+          "Ext. Fil.",
+          "E&F"
+        ],
+        [
+          "LongRAG-ChatGLM3-6B-32k w/ SFT",
+          "2181",
+          "10669",
+          "2254 1160",
+          "1233"
+        ],
+        [
+          "LongRAG-Qwen1.5-7B-32k w/ SFT",
+          "2181",
+          "10669",
+          "2248 1260",
+          "1327"
+        ],
+        [
+          "LongRAG-Vicuna-v1.5-7B-16k w/ SFT",
+          "2181",
+          "10596",
+          "2270 1233",
+          "1321"
+        ],
+        [
+          "LongRAG-Llama3-8B-8k w/ SFT",
+          "2181",
+          "7428",
+          "2243 1101",
+          "1163"
+        ]
+      ],
+      "row_count": 5,
+      "col_count": 5,
+      "caption": "Table 12: Values of the token length fed into the generator on HotpotQA dataset.",
+      "is_results_table": false,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "dataset_statistics",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Rejected or non-results table",
+      "raw_table": {
+        "raw_headers": [
+          "Col_1",
+          "Col_2",
+          "HotpotQA",
+          "Col_4",
+          "Col_5"
+        ],
+        "raw_rows": [
+          [
+            "Model",
+            "R&B",
+            "R&L",
+            "Ext. Fil.",
+            "E&F"
+          ],
+          [
+            "LongRAG-ChatGLM3-6B-32k w/ SFT",
+            "2181",
+            "10669",
+            "2254 1160",
+            "1233"
+          ],
+          [
+            "LongRAG-Qwen1.5-7B-32k w/ SFT",
+            "2181",
+            "10669",
+            "2248 1260",
+            "1327"
+          ],
+          [
+            "LongRAG-Vicuna-v1.5-7B-16k w/ SFT",
+            "2181",
+            "10596",
+            "2270 1233",
+            "1321"
+          ],
+          [
+            "LongRAG-Llama3-8B-8k w/ SFT",
+            "2181",
+            "7428",
+            "2243 1101",
+            "1163"
+          ]
+        ],
+        "bbox": [
+          122.68612670898438,
+          130.5492706298828,
+          472.5960998535156,
+          219.39813232421875
+        ],
+        "caption": "Table 12: Values of the token length fed into the generator on HotpotQA dataset."
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "1812cfdb-6312-498e-965f-83fac3cffb2a",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 21,
+    "table_index": 2,
+    "table_data": {
+      "page_number": 21,
+      "table_index": 2,
+      "headers": [
+        "Col_1",
+        "Col_2",
+        "2WikiMultiHopQA",
+        "Col_4",
+        "Col_5",
+        "Col_6"
+      ],
+      "rows": [
+        [
+          "Model",
+          "R&B",
+          "R&L",
+          "Ext.",
+          "Fil.",
+          "E&F"
+        ],
+        [
+          "LongRAG-ChatGLM3-6B-32k w/ SFT",
+          "2086",
+          "8096",
+          "2171",
+          "937",
+          "1022"
+        ],
+        [
+          "LongRAG-Qwen1.5-7B-32k w/ SFT",
+          "2086",
+          "8096",
+          "2162",
+          "941",
+          "1016"
+        ],
+        [
+          "LongRAG-Vicuna-v1.5-7B-16k w/ SFT",
+          "2086",
+          "8096",
+          "2176",
+          "937",
+          "1027"
+        ],
+        [
+          "LongRAG-Llama3-8B-8k w/ SFT",
+          "2086",
+          "6744",
+          "2150",
+          "813",
+          "876"
+        ]
+      ],
+      "row_count": 5,
+      "col_count": 6,
+      "caption": "Table 13: Values of the token length fed into the generator on 2WikiMultiHopQA dataset.",
+      "is_results_table": false,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "dataset_statistics",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Rejected or non-results table",
+      "raw_table": {
+        "raw_headers": [
+          "Col_1",
+          "Col_2",
+          "2WikiMultiHopQA",
+          "Col_4",
+          "Col_5",
+          "Col_6"
+        ],
+        "raw_rows": [
+          [
+            "Model",
+            "R&B",
+            "R&L",
+            "Ext.",
+            "Fil.",
+            "E&F"
+          ],
+          [
+            "LongRAG-ChatGLM3-6B-32k w/ SFT",
+            "2086",
+            "8096",
+            "2171",
+            "937",
+            "1022"
+          ],
+          [
+            "LongRAG-Qwen1.5-7B-32k w/ SFT",
+            "2086",
+            "8096",
+            "2162",
+            "941",
+            "1016"
+          ],
+          [
+            "LongRAG-Vicuna-v1.5-7B-16k w/ SFT",
+            "2086",
+            "8096",
+            "2176",
+            "937",
+            "1027"
+          ],
+          [
+            "LongRAG-Llama3-8B-8k w/ SFT",
+            "2086",
+            "6744",
+            "2150",
+            "813",
+            "876"
+          ]
+        ],
+        "bbox": [
+          127.83538818359375,
+          367.20709228515625,
+          467.4466552734375,
+          456.0559387207031
+        ],
+        "caption": "Table 13: Values of the token length fed into the generator on 2WikiMultiHopQA dataset."
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "1410f0ae-1bd2-48c6-8bd7-e438f4251c8b",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 21,
+    "table_index": 3,
+    "table_data": {
+      "page_number": 21,
+      "table_index": 3,
+      "headers": [
+        "Col_1",
+        "Col_2",
+        "MusiQue",
+        "Col_4",
+        "Col_5",
+        "Col_6"
+      ],
+      "rows": [
+        [
+          "Model",
+          "R&B",
+          "R&L",
+          "Ext.",
+          "Fil.",
+          "E&F"
+        ],
+        [
+          "LongRAG-ChatGLM3-6B-32k w/ SFT",
+          "2141",
+          "15062",
+          "2217",
+          "975",
+          "1051"
+        ],
+        [
+          "LongRAG-Qwen1.5-7B-32k w/ SFT",
+          "2141",
+          "15062",
+          "2198",
+          "1050",
+          "1108"
+        ],
+        [
+          "LongRAG-Vicuna-v1.5-7B-16k w/ SFT",
+          "2141",
+          "14520",
+          "2240",
+          "995",
+          "1094"
+        ],
+        [
+          "LongRAG-Llama3-8B-8k w/ SFT",
+          "2141",
+          "7711",
+          "2196",
+          "828",
+          "883"
+        ]
+      ],
+      "row_count": 5,
+      "col_count": 6,
+      "caption": "Table 14: Values of the token length fed into the generator on MusiQue dataset.",
+      "is_results_table": false,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "dataset_statistics",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Rejected or non-results table",
+      "raw_table": {
+        "raw_headers": [
+          "Col_1",
+          "Col_2",
+          "MusiQue",
+          "Col_4",
+          "Col_5",
+          "Col_6"
+        ],
+        "raw_rows": [
+          [
+            "Model",
+            "R&B",
+            "R&L",
+            "Ext.",
+            "Fil.",
+            "E&F"
+          ],
+          [
+            "LongRAG-ChatGLM3-6B-32k w/ SFT",
+            "2141",
+            "15062",
+            "2217",
+            "975",
+            "1051"
+          ],
+          [
+            "LongRAG-Qwen1.5-7B-32k w/ SFT",
+            "2141",
+            "15062",
+            "2198",
+            "1050",
+            "1108"
+          ],
+          [
+            "LongRAG-Vicuna-v1.5-7B-16k w/ SFT",
+            "2141",
+            "14520",
+            "2240",
+            "995",
+            "1094"
+          ],
+          [
+            "LongRAG-Llama3-8B-8k w/ SFT",
+            "2141",
+            "7711",
+            "2196",
+            "828",
+            "883"
+          ]
+        ],
+        "bbox": [
+          122.68612670898438,
+          603.8649291992188,
+          472.5960998535156,
+          692.7137451171875
+        ],
+        "caption": "Table 14: Values of the token length fed into the generator on MusiQue dataset."
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "e111af8c-1bc8-41b6-8fae-41d0f3b49e73",
+    "paper_id": "16718843-97ea-4e24-8965-cee147facac3",
+    "filename": "2024.emnlp-main.1259-paper-7.pdf",
+    "page_number": 22,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 22,
+      "table_index": 1,
+      "headers": [
+        "Datasets",
+        "HotpotQA",
+        "2WikiMultiHopQA",
+        "MusiQue",
+        "QASPER"
+      ],
+      "rows": [
+        [
+          "Num of long-context extractor data",
+          "200",
+          "200",
+          "200",
+          "100"
+        ],
+        [
+          "Num of CoT-guiding data",
+          "200",
+          "200",
+          "200",
+          "100"
+        ],
+        [
+          "Num of filtering data",
+          "200",
+          "200",
+          "200",
+          "-"
+        ],
+        [
+          "Num of task-oriented data",
+          "200",
+          "200",
+          "200",
+          "-"
+        ],
+        [
+          "Num of samples",
+          "800",
+          "800",
+          "800",
+          "200"
+        ]
+      ],
+      "row_count": 5,
+      "col_count": 5,
+      "caption": "Table 15: Statistics of our fine-tuning instruction dataset LRGinstruction.",
+      "is_results_table": false,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "dataset_statistics",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Rejected or non-results table",
+      "raw_table": {
+        "raw_headers": [
+          "Datasets",
+          "HotpotQA",
+          "2WikiMultiHopQA",
+          "MusiQue",
+          "QASPER"
+        ],
+        "raw_rows": [
+          [
+            "Num of long-context extractor data",
+            "200",
+            "200",
+            "200",
+            "100"
+          ],
+          [
+            "Num of CoT-guiding data",
+            "200",
+            "200",
+            "200",
+            "100"
+          ],
+          [
+            "Num of filtering data",
+            "200",
+            "200",
+            "200",
+            "-"
+          ],
+          [
+            "Num of task-oriented data",
+            "200",
+            "200",
+            "200",
+            "-"
+          ],
+          [
+            "Num of samples",
+            "800",
+            "800",
+            "800",
+            "200"
+          ]
+        ],
+        "bbox": [
+          83.37916564941406,
+          367.08721923828125,
+          511.89776611328125,
+          456.154052734375
+        ],
+        "caption": "Table 15: Statistics of our fine-tuning instruction dataset LRGinstruction."
+      },
+      "paper_id": "16718843-97ea-4e24-8965-cee147facac3"
+    }
+  },
+  {
+    "id": "0ddea875-2773-46d4-8065-4d0fdeab6f8b",
+    "paper_id": "46353944-90f2-435b-a40d-5822cec352e1",
+    "filename": "2024.findings-acl.415-paper-6.pdf",
+    "page_number": 4,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 4,
+      "table_index": 1,
+      "headers": [
+        "Baselines (1,271)",
+        "Adaptive",
+        "Retrieval",
+        "Always Retrieval"
+      ],
+      "rows": [
+        [
+          "Self-RAG (7B) t = 0.25 t = 0.5 t = 0.75",
+          "Retrieval Match Calibration-based 100.0 31.9 23.0 10.6 0.0 6.0",
+          "",
+          "Match 31.9"
+        ],
+        [
+          "t = None Vanilla §3",
+          "0.4",
+          "6.0 Model-based",
+          ""
+        ],
+        [
+          "TinyLlama (1.1B) Phi-2 (2.7B)",
+          "39.1 94.1",
+          "14.7 35.0",
+          "28.2 36.4"
+        ],
+        [
+          "Llama-2 (7B)",
+          "80.3",
+          "26.1",
+          "36.0"
+        ],
+        [
+          "GPT-3.5",
+          "49.3",
+          "20.8",
+          "38.2"
+        ],
+        [
+          "GPT-4* Ours TA-ARE §4",
+          "67.6",
+          "37.6",
+          "46.0"
+        ],
+        [
+          "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) GPT-3.5 GPT-4*",
+          "54.1(+15.0) 95.5(+1.4) 86.0(+5.7) 86.3(+37.0) 83.2(+15.6)",
+          "19.0(+4.3) 36.0(+1.0) 30.7(+4.6) 35.8(+15.0) 46.4(+8.8)",
+          "28.2 36.4 36.0 38.2 46.0"
+        ],
+        [
+          "Average gain",
+          "+14.9",
+          "+6.7",
+          "–"
+        ]
+      ],
+      "row_count": 8,
+      "col_count": 4,
+      "caption": "Table 1: Retrieval and match accuracy on RetrievalQA. * indicates using 250 examples for testing to reduce API costs. Best scores in Bold and second best in underline.",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [
+        {
+          "model": "Llama-2 (7B)",
+          "dataset": "RetrievalQA",
+          "metric": "Adaptive",
+          "value": "80.3",
+          "page": 4
+        },
+        {
+          "model": "Llama-2 (7B)",
+          "dataset": "RetrievalQA",
+          "metric": "Retrieval",
+          "value": "26.1",
+          "page": 4
+        },
+        {
+          "model": "Llama-2 (7B)",
+          "dataset": "RetrievalQA",
+          "metric": "Always Retrieval",
+          "value": "36.0",
+          "page": 4
+        },
+        {
+          "model": "GPT-3.5",
+          "dataset": "RetrievalQA",
+          "metric": "Adaptive",
+          "value": "49.3",
+          "page": 4
+        },
+        {
+          "model": "GPT-3.5",
+          "dataset": "RetrievalQA",
+          "metric": "Retrieval",
+          "value": "20.8",
+          "page": 4
+        },
+        {
+          "model": "GPT-3.5",
+          "dataset": "RetrievalQA",
+          "metric": "Always Retrieval",
+          "value": "38.2",
+          "page": 4
+        }
+      ],
+      "normalization_reliable": false,
+      "normalization_note": "Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved.",
+      "raw_table": {
+        "raw_headers": [
+          "Baselines (1,271)",
+          "Adaptive",
+          "Retrieval",
+          "Always Retrieval"
+        ],
+        "raw_rows": [
+          [
+            "Self-RAG (7B) t = 0.25 t = 0.5 t = 0.75",
+            "Retrieval Match Calibration-based 100.0 31.9 23.0 10.6 0.0 6.0",
+            "",
+            "Match 31.9"
+          ],
+          [
+            "t = None Vanilla §3",
+            "0.4",
+            "6.0 Model-based",
+            ""
+          ],
+          [
+            "TinyLlama (1.1B) Phi-2 (2.7B)",
+            "39.1 94.1",
+            "14.7 35.0",
+            "28.2 36.4"
+          ],
+          [
+            "Llama-2 (7B)",
+            "80.3",
+            "26.1",
+            "36.0"
+          ],
+          [
+            "GPT-3.5",
+            "49.3",
+            "20.8",
+            "38.2"
+          ],
+          [
+            "GPT-4* Ours TA-ARE §4",
+            "67.6",
+            "37.6",
+            "46.0"
+          ],
+          [
+            "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) GPT-3.5 GPT-4*",
+            "54.1(+15.0) 95.5(+1.4) 86.0(+5.7) 86.3(+37.0) 83.2(+15.6)",
+            "19.0(+4.3) 36.0(+1.0) 30.7(+4.6) 35.8(+15.0) 46.4(+8.8)",
+            "28.2 36.4 36.0 38.2 46.0"
+          ],
+          [
+            "Average gain",
+            "+14.9",
+            "+6.7",
+            "–"
+          ]
+        ],
+        "bbox": [
+          86.78929138183594,
+          75.67678833007812,
+          273.2030029296875,
+          274.6419372558594
+        ],
+        "caption": "Table 1: Retrieval and match accuracy on RetrievalQA. * indicates using 250 examples for testing to reduce API costs. Best scores in Bold and second best in underline."
+      },
+      "paper_id": "46353944-90f2-435b-a40d-5822cec352e1"
+    }
+  },
+  {
+    "id": "2d5b7c89-5884-48f5-b829-ec1c99dec769",
+    "paper_id": "46353944-90f2-435b-a40d-5822cec352e1",
+    "filename": "2024.findings-acl.415-paper-6.pdf",
+    "page_number": 5,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 5,
+      "table_index": 1,
+      "headers": [
+        "Col_1",
+        "Time",
+        "Example",
+        "Avg. Retrieval",
+        "Avg. Match"
+      ],
+      "rows": [
+        [
+          "1 2",
+          "✔",
+          "",
+          "65.8 72.4",
+          "24.8 27.0"
+        ],
+        [
+          "3 4",
+          "✔",
+          "✔ ✔",
+          "78.9 80.6",
+          "29.3 31.1"
+        ]
+      ],
+      "row_count": 2,
+      "col_count": 5,
+      "caption": "Table 2: Ablation study for current date and demonstra- tion examples. Results are averaged for all models. ther show the fine grained performance of each",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [
+        {
+          "model": "1 2",
+          "dataset": "Benchmark Dataset",
+          "metric": "Time",
+          "value": "✔",
+          "page": 5
+        },
+        {
+          "model": "3 4",
+          "dataset": "Benchmark Dataset",
+          "metric": "Time",
+          "value": "✔",
+          "page": 5
+        },
+        {
+          "model": "3 4",
+          "dataset": "Benchmark Dataset",
+          "metric": "Example",
+          "value": "✔ ✔",
+          "page": 5
+        }
+      ],
+      "normalization_reliable": false,
+      "normalization_note": "Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved.",
+      "raw_table": {
+        "raw_headers": [
+          "Col_1",
+          "Time",
+          "Example",
+          "Avg. Retrieval",
+          "Avg. Match"
+        ],
+        "raw_rows": [
+          [
+            "1 2",
+            "✔",
+            "",
+            "65.8 72.4",
+            "24.8 27.0"
+          ],
+          [
+            "3 4",
+            "✔",
+            "✔ ✔",
+            "78.9 80.6",
+            "29.3 31.1"
+          ]
+        ],
+        "bbox": [
+          77.57586669921875,
+          517.3049926757812,
+          282.4171142578125,
+          569.2506713867188
+        ],
+        "caption": "Table 2: Ablation study for current date and demonstra- tion examples. Results are averaged for all models. ther show the fine grained performance of each"
+      },
+      "paper_id": "46353944-90f2-435b-a40d-5822cec352e1"
+    }
+  },
+  {
+    "id": "d190ebf0-6fcd-4cad-97db-23b573b6d241",
+    "paper_id": "46353944-90f2-435b-a40d-5822cec352e1",
+    "filename": "2024.findings-acl.415-paper-6.pdf",
+    "page_number": 10,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 10,
+      "table_index": 1,
+      "headers": [
+        "Category",
+        "Data Source",
+        "# Original",
+        "# After Filtering",
+        "# Avg. Q Tokens",
+        "# Avg. Ans Tokens",
+        "# Avg. Doc Tokens (Top-5)"
+      ],
+      "rows": [
+        [
+          "New world",
+          "RealTimeQA (Kasai et al., 2023)",
+          "397",
+          "188",
+          "19.0",
+          "3.1",
+          "216.7"
+        ],
+        [
+          "knowledge",
+          "FreshQA (Vu et al., 2023)",
+          "127",
+          "54",
+          "13.8",
+          "3.9",
+          "227.5"
+        ],
+        [
+          "Long-tail knowledge",
+          "ToolQA (Zhuang et al., 2023) PopQA (Mallen et al., 2023)",
+          "100 1, 399",
+          "75 659",
+          "21.7 8.8",
+          "3.5 4.0",
+          "425.3 540.1"
+        ],
+        [
+          "",
+          "TriviaQA (Joshi et al., 2017)",
+          "7, 313",
+          "295",
+          "17.3",
+          "5.9",
+          "703.3"
+        ],
+        [
+          "Total/Average",
+          "RetrievalQA",
+          "9, 336",
+          "1, 271",
+          "13.2",
+          "4.3",
+          "510.1"
+        ]
+      ],
+      "row_count": 5,
+      "col_count": 7,
+      "caption": "Table 3: Data statistics of RetrievalQA (questions need retrieval). # Avg. Q, Ans, Doc Tokens means the average number of tokens of questions, answers, and top-5 retrieved documents, respectively. We use the tiktoken python library to calculate the number of tokens.",
+      "is_results_table": false,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "dataset_statistics",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Rejected or non-results table",
+      "raw_table": {
+        "raw_headers": [
+          "Category",
+          "Data Source",
+          "# Original",
+          "# After Filtering",
+          "# Avg. Q Tokens",
+          "# Avg. Ans Tokens",
+          "# Avg. Doc Tokens (Top-5)"
+        ],
+        "raw_rows": [
+          [
+            "New world",
+            "RealTimeQA (Kasai et al., 2023)",
+            "397",
+            "188",
+            "19.0",
+            "3.1",
+            "216.7"
+          ],
+          [
+            "knowledge",
+            "FreshQA (Vu et al., 2023)",
+            "127",
+            "54",
+            "13.8",
+            "3.9",
+            "227.5"
+          ],
+          [
+            "Long-tail knowledge",
+            "ToolQA (Zhuang et al., 2023) PopQA (Mallen et al., 2023)",
+            "100 1, 399",
+            "75 659",
+            "21.7 8.8",
+            "3.5 4.0",
+            "425.3 540.1"
+          ],
+          [
+            "",
+            "TriviaQA (Joshi et al., 2017)",
+            "7, 313",
+            "295",
+            "17.3",
+            "5.9",
+            "703.3"
+          ],
+          [
+            "Total/Average",
+            "RetrievalQA",
+            "9, 336",
+            "1, 271",
+            "13.2",
+            "4.3",
+            "510.1"
+          ]
+        ],
+        "bbox": [
+          85.9572982788086,
+          75.60723876953125,
+          509.322998046875,
+          220.3890380859375
+        ],
+        "caption": "Table 3: Data statistics of RetrievalQA (questions need retrieval). # Avg. Q, Ans, Doc Tokens means the average number of tokens of questions, answers, and top-5 retrieved documents, respectively. We use the tiktoken python library to calculate the number of tokens."
+      },
+      "paper_id": "46353944-90f2-435b-a40d-5822cec352e1"
+    }
+  },
+  {
+    "id": "6257be31-cf23-4a98-af57-0e2c7b7e351a",
+    "paper_id": "46353944-90f2-435b-a40d-5822cec352e1",
+    "filename": "2024.findings-acl.415-paper-6.pdf",
+    "page_number": 11,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 11,
+      "table_index": 1,
+      "headers": [
+        "Model Name",
+        "Model Size",
+        "Release"
+      ],
+      "rows": [
+        [
+          "TinyLlama/TinyLlama-1.1B-Chat-v1.0 microsoft/phi-2 meta-llama/Llama-2-7b-chat-hf selfrag/selfrag_llama2_7b",
+          "1.1B 2.7B 7B 7B",
+          "Dec 2023 Dec 2023 Jul 2023 Oct 2023"
+        ],
+        [
+          "gpt-3.5-turbo",
+          "–",
+          "Nov 2022"
+        ],
+        [
+          "gpt-4-turbo-preview",
+          "–",
+          "Mar 2023"
+        ]
+      ],
+      "row_count": 3,
+      "col_count": 3,
+      "caption": "Table 4: Model used in the experiments. Parameters Values",
+      "is_results_table": false,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "other",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Rejected or non-results table",
+      "raw_table": {
+        "raw_headers": [
+          "Model Name",
+          "Model Size",
+          "Release"
+        ],
+        "raw_rows": [
+          [
+            "TinyLlama/TinyLlama-1.1B-Chat-v1.0 microsoft/phi-2 meta-llama/Llama-2-7b-chat-hf selfrag/selfrag_llama2_7b",
+            "1.1B 2.7B 7B 7B",
+            "Dec 2023 Dec 2023 Jul 2023 Oct 2023"
+          ],
+          [
+            "gpt-3.5-turbo",
+            "–",
+            "Nov 2022"
+          ],
+          [
+            "gpt-4-turbo-preview",
+            "–",
+            "Mar 2023"
+          ]
+        ],
+        "bbox": [
+          170.68052673339844,
+          75.67903137207031,
+          424.59930419921875,
+          148.9056396484375
+        ],
+        "caption": "Table 4: Model used in the experiments. Parameters Values"
+      },
+      "paper_id": "46353944-90f2-435b-a40d-5822cec352e1"
+    }
+  },
+  {
+    "id": "e3ea57b6-0e6f-4478-b7a9-e424a4a2c164",
+    "paper_id": "46353944-90f2-435b-a40d-5822cec352e1",
+    "filename": "2024.findings-acl.415-paper-6.pdf",
+    "page_number": 11,
+    "table_index": 2,
+    "table_data": {
+      "page_number": 11,
+      "table_index": 2,
+      "headers": [
+        "Parameters",
+        "Values"
+      ],
+      "rows": [
+        [
+          "temperature",
+          "0.0"
+        ],
+        [
+          "top_p",
+          "1.0"
+        ],
+        [
+          "max_tokens",
+          "100"
+        ],
+        [
+          "Retrieved docs",
+          "top-5"
+        ],
+        [
+          "Threshold (Self-RAG)",
+          "[None, 0.25, 0.5, 0.75]"
+        ],
+        [
+          "# demonstrations (TA-ARE)",
+          "4"
+        ],
+        [
+          "Eval metric",
+          "match/retrieval accuracy"
+        ]
+      ],
+      "row_count": 7,
+      "col_count": 2,
+      "caption": "Table 5: Implementation hyperparameters. rameters makes them hallucinate. Since these ques- tions only take a tiny portion of the entire dataset",
+      "is_results_table": false,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "hyperparameters",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Rejected or non-results table",
+      "raw_table": {
+        "raw_headers": [
+          "Parameters",
+          "Values"
+        ],
+        "raw_rows": [
+          [
+            "temperature",
+            "0.0"
+          ],
+          [
+            "top_p",
+            "1.0"
+          ],
+          [
+            "max_tokens",
+            "100"
+          ],
+          [
+            "Retrieved docs",
+            "top-5"
+          ],
+          [
+            "Threshold (Self-RAG)",
+            "[None, 0.25, 0.5, 0.75]"
+          ],
+          [
+            "# demonstrations (TA-ARE)",
+            "4"
+          ],
+          [
+            "Eval metric",
+            "match/retrieval accuracy"
+          ]
+        ],
+        "bbox": [
+          99.35694122314453,
+          201.40472412109375,
+          260.6346435546875,
+          314.75238037109375
+        ],
+        "caption": "Table 5: Implementation hyperparameters. rameters makes them hallucinate. Since these ques- tions only take a tiny portion of the entire dataset"
+      },
+      "paper_id": "46353944-90f2-435b-a40d-5822cec352e1"
+    }
+  },
+  {
+    "id": "dcfb389e-3276-460c-bce9-9c2bc87bddff",
+    "paper_id": "46353944-90f2-435b-a40d-5822cec352e1",
+    "filename": "2024.findings-acl.415-paper-6.pdf",
+    "page_number": 11,
+    "table_index": 3,
+    "table_data": {
+      "page_number": 11,
+      "table_index": 3,
+      "headers": [
+        "Model",
+        "Match",
+        "F1"
+      ],
+      "rows": [
+        [
+          "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) Self-RAG (7B) GPT-3.5 GPT-4*",
+          "4.2 7.2 2.0 6.0 1.2 2.4",
+          "1.3 3.9 0.7 1.5 1.0 2.3"
+        ]
+      ],
+      "row_count": 1,
+      "col_count": 3,
+      "caption": "Table 6: Match and F1 scores of models on RetrievalQA (1,271) without retrieval. * indicates that",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved.",
+      "raw_table": {
+        "raw_headers": [
+          "Model",
+          "Match",
+          "F1"
+        ],
+        "raw_rows": [
+          [
+            "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) Self-RAG (7B) GPT-3.5 GPT-4*",
+            "4.2 7.2 2.0 6.0 1.2 2.4",
+            "1.3 3.9 0.7 1.5 1.0 2.3"
+          ]
+        ],
+        "bbox": [
+          117.30085754394531,
+          471.060546875,
+          242.69290161132812,
+          542.90625
+        ],
+        "caption": "Table 6: Match and F1 scores of models on RetrievalQA (1,271) without retrieval. * indicates that"
+      },
+      "paper_id": "46353944-90f2-435b-a40d-5822cec352e1"
+    }
+  },
+  {
+    "id": "70d4c812-a19f-4cae-89b7-6e84297ea7c8",
+    "paper_id": "46353944-90f2-435b-a40d-5822cec352e1",
+    "filename": "2024.findings-acl.415-paper-6.pdf",
+    "page_number": 11,
+    "table_index": 4,
+    "table_data": {
+      "page_number": 11,
+      "table_index": 4,
+      "headers": [
+        "Model",
+        "Match"
+      ],
+      "rows": [
+        [
+          "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) Self-RAG (7B) GPT-3.5 GPT-4*",
+          "88.1 87.7 89.8 88.2 91.1 88.4"
+        ]
+      ],
+      "row_count": 1,
+      "col_count": 2,
+      "caption": "Table 7: Match scores of models on 1,517 questions that do not need retrieval. We also run the sanity check on the 1,514 ques-",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved.",
+      "raw_table": {
+        "raw_headers": [
+          "Model",
+          "Match"
+        ],
+        "raw_rows": [
+          [
+            "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) Self-RAG (7B) GPT-3.5 GPT-4*",
+            "88.1 87.7 89.8 88.2 91.1 88.4"
+          ]
+        ],
+        "bbox": [
+          129.16650390625,
+          635.8104248046875,
+          230.82627868652344,
+          707.5484619140625
+        ],
+        "caption": "Table 7: Match scores of models on 1,517 questions that do not need retrieval. We also run the sanity check on the 1,514 ques-"
+      },
+      "paper_id": "46353944-90f2-435b-a40d-5822cec352e1"
+    }
+  },
+  {
+    "id": "6adefdf7-8456-41b0-b33b-a74b35d992f1",
+    "paper_id": "46353944-90f2-435b-a40d-5822cec352e1",
+    "filename": "2024.findings-acl.415-paper-6.pdf",
+    "page_number": 11,
+    "table_index": 5,
+    "table_data": {
+      "page_number": 11,
+      "table_index": 5,
+      "headers": [
+        "Col_1",
+        "Adaptive Retrieval"
+      ],
+      "rows": [
+        [
+          "Baselines",
+          "Retrieval Match"
+        ],
+        [
+          "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) GPT-3.5 GPT-4",
+          "90.9 (+51.8) 27.5 (+12.8) 88.7 (-5.4) 33.8 (-1.2) 47.0 (-33.3) 16.7 (-9.4) 87.6 (+38.3) 36.2 (+15.4) 86.0 (+18.4) 46.0 (+8.4)"
+        ],
+        [
+          "Average gain",
+          "+14.0 +5.2"
+        ]
+      ],
+      "row_count": 3,
+      "col_count": 2,
+      "caption": "Table 5: Implementation hyperparameters. rameters makes them hallucinate Since these ques- Average gain",
+      "is_results_table": false,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "hyperparameters",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Rejected or non-results table",
+      "raw_table": {
+        "raw_headers": [
+          "Col_1",
+          "Adaptive Retrieval"
+        ],
+        "raw_rows": [
+          [
+            "Baselines",
+            "Retrieval Match"
+          ],
+          [
+            "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) GPT-3.5 GPT-4",
+            "90.9 (+51.8) 27.5 (+12.8) 88.7 (-5.4) 33.8 (-1.2) 47.0 (-33.3) 16.7 (-9.4) 87.6 (+38.3) 36.2 (+15.4) 86.0 (+18.4) 46.0 (+8.4)"
+          ],
+          [
+            "Average gain",
+            "+14.0 +5.2"
+          ]
+        ],
+        "bbox": [
+          325.580322265625,
+          199.8750762939453,
+          504.9871826171875,
+          294.65032958984375
+        ],
+        "caption": "Table 5: Implementation hyperparameters. rameters makes them hallucinate Since these ques- Average gain"
+      },
+      "paper_id": "46353944-90f2-435b-a40d-5822cec352e1"
+    }
+  },
+  {
+    "id": "311690ce-682f-4f89-8fdf-ccbb095d5508",
+    "paper_id": "46353944-90f2-435b-a40d-5822cec352e1",
+    "filename": "2024.findings-acl.415-paper-6.pdf",
+    "page_number": 11,
+    "table_index": 6,
+    "table_data": {
+      "page_number": 11,
+      "table_index": 6,
+      "headers": [
+        "Baselines",
+        "Adaptive Retrieval Retrieval Match"
+      ],
+      "rows": [
+        [
+          "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) GPT-3.5 GPT-4",
+          "73.8 (+34.7) 23.1 (+8.4) 89.5 (-4.6) 32.2 (-2.8) 90.0 (+9.7) 31.4 (+5.3) 36.7 (-12.6) 18.9 (-1.9) 70.0 (+2.4) 39.6 (+2.0)"
+        ],
+        [
+          "Average gain",
+          "+5.9 +2.2"
+        ]
+      ],
+      "row_count": 2,
+      "col_count": 2,
+      "caption": "Table 9: Ablation: our TA-ARE without demonstration examples. tions that do not need retrieval. As shown in Table",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved.",
+      "raw_table": {
+        "raw_headers": [
+          "Baselines",
+          "Adaptive Retrieval Retrieval Match"
+        ],
+        "raw_rows": [
+          [
+            "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) GPT-3.5 GPT-4",
+            "73.8 (+34.7) 23.1 (+8.4) 89.5 (-4.6) 32.2 (-2.8) 90.0 (+9.7) 31.4 (+5.3) 36.7 (-12.6) 18.9 (-1.9) 70.0 (+2.4) 39.6 (+2.0)"
+          ],
+          [
+            "Average gain",
+            "+5.9 +2.2"
+          ]
+        ],
+        "bbox": [
+          327.82147216796875,
+          361.1491394042969,
+          502.745849609375,
+          455.9243469238281
+        ],
+        "caption": "Table 9: Ablation: our TA-ARE without demonstration examples. tions that do not need retrieval. As shown in Table"
+      },
+      "paper_id": "46353944-90f2-435b-a40d-5822cec352e1"
+    }
+  },
+  {
+    "id": "bec44d78-855d-40ad-8a25-9b57f8a9b495",
+    "paper_id": "46353944-90f2-435b-a40d-5822cec352e1",
+    "filename": "2024.findings-acl.415-paper-6.pdf",
+    "page_number": 13,
+    "table_index": 1,
+    "table_data": {
+      "page_number": 13,
+      "table_index": 1,
+      "headers": [
+        "Baselines (2,785)",
+        "No Retrieval",
+        "Col_3",
+        "Adaptive Retrieval",
+        "Col_5",
+        "Col_6",
+        "Col_7",
+        "Always Retrieval"
+      ],
+      "rows": [
+        [
+          "",
+          "Match",
+          "Match",
+          "Retrieval Acc",
+          "Precision",
+          "Recall",
+          "F1",
+          "Match"
+        ],
+        [
+          "",
+          "",
+          "",
+          "Calibration-based",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "Self-RAG (7B) t = 0.25 t = 0.5 t = 0.75 t = None",
+          "50.7",
+          "64.3 53.2 50.7 49.3",
+          "45.6 53.6 54.4 54.5",
+          "50.0 51.2 50.0 50.1",
+          "22.8 51.7 27.2 62.9",
+          "31.3 51.5 35.2 55.8",
+          "64.3"
+        ],
+        [
+          "",
+          "",
+          "",
+          "Model-based",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "Vanilla §3",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) GPT-3.5 GPT-4*",
+          "49.8 51.0 49.7 50.1 45.4",
+          "54.4 64.9 60.4 58.7 64.4",
+          "49.3 48.0 44.3 61.3 76.0",
+          "48.5 51.7 47.2 60.3 76.0",
+          "48.4 55.8 45.0 60.9 76.8",
+          "48.5 53.7 46.1 60.6 76.4",
+          "59.9 65.7 65.8 65.7 64.2"
+        ],
+        [
+          "Ours TA-ARE §4",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        [
+          "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) GPT-3.5 GPT-4*",
+          "49.8 51.0 49.7 50.1 45.4",
+          "56.1 65.6 63.3 65.3 67.6",
+          "44.7 54.1 44.3 67.1 76.6",
+          "45.4 57.4 47.6 68.6 76.6",
+          "45.3 66.8 44.2 70.6 77.1",
+          "45.4 61.8 45.8 69.6 76.8",
+          "59.9 65.7 65.8 65.7 64.2"
+        ],
+        [
+          "Average gain",
+          "–",
+          "+3.0",
+          "+1.6",
+          "+2.4",
+          "+3.4",
+          "+2.8",
+          "–"
+        ]
+      ],
+      "row_count": 9,
+      "col_count": 8,
+      "caption": "Table 10: Retrieval and match accuracy on RetrievalQA (overall). * indicates using 500 examples for testing to reduce API costs.",
+      "is_results_table": true,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "results",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Irregular row/column alignment or collapsed sub-rows prevent unambiguous decomposition; raw table preserved.",
+      "raw_table": {
+        "raw_headers": [
+          "Baselines (2,785)",
+          "No Retrieval",
+          "Col_3",
+          "Adaptive Retrieval",
+          "Col_5",
+          "Col_6",
+          "Col_7",
+          "Always Retrieval"
+        ],
+        "raw_rows": [
+          [
+            "",
+            "Match",
+            "Match",
+            "Retrieval Acc",
+            "Precision",
+            "Recall",
+            "F1",
+            "Match"
+          ],
+          [
+            "",
+            "",
+            "",
+            "Calibration-based",
+            "",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Self-RAG (7B) t = 0.25 t = 0.5 t = 0.75 t = None",
+            "50.7",
+            "64.3 53.2 50.7 49.3",
+            "45.6 53.6 54.4 54.5",
+            "50.0 51.2 50.0 50.1",
+            "22.8 51.7 27.2 62.9",
+            "31.3 51.5 35.2 55.8",
+            "64.3"
+          ],
+          [
+            "",
+            "",
+            "",
+            "Model-based",
+            "",
+            "",
+            "",
+            ""
+          ],
+          [
+            "Vanilla §3",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          [
+            "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) GPT-3.5 GPT-4*",
+            "49.8 51.0 49.7 50.1 45.4",
+            "54.4 64.9 60.4 58.7 64.4",
+            "49.3 48.0 44.3 61.3 76.0",
+            "48.5 51.7 47.2 60.3 76.0",
+            "48.4 55.8 45.0 60.9 76.8",
+            "48.5 53.7 46.1 60.6 76.4",
+            "59.9 65.7 65.8 65.7 64.2"
+          ],
+          [
+            "Ours TA-ARE §4",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          [
+            "TinyLlama (1.1B) Phi-2 (2.7B) Llama-2 (7B) GPT-3.5 GPT-4*",
+            "49.8 51.0 49.7 50.1 45.4",
+            "56.1 65.6 63.3 65.3 67.6",
+            "44.7 54.1 44.3 67.1 76.6",
+            "45.4 57.4 47.6 68.6 76.6",
+            "45.3 66.8 44.2 70.6 77.1",
+            "45.4 61.8 45.8 69.6 76.8",
+            "59.9 65.7 65.8 65.7 64.2"
+          ],
+          [
+            "Average gain",
+            "–",
+            "+3.0",
+            "+1.6",
+            "+2.4",
+            "+3.4",
+            "+2.8",
+            "–"
+          ]
+        ],
+        "bbox": [
+          107.3673324584961,
+          134.9679718017578,
+          487.9127197265625,
+          379.57965087890625
+        ],
+        "caption": "Table 10: Retrieval and match accuracy on RetrievalQA (overall). * indicates using 500 examples for testing to reduce API costs."
+      },
+      "paper_id": "46353944-90f2-435b-a40d-5822cec352e1"
+    }
+  },
+  {
+    "id": "f8a8bbd4-182b-40a5-91e0-174c901571d9",
+    "paper_id": "46353944-90f2-435b-a40d-5822cec352e1",
+    "filename": "2024.findings-acl.415-paper-6.pdf",
+    "page_number": 13,
+    "table_index": 2,
+    "table_data": {
+      "page_number": 13,
+      "table_index": 2,
+      "headers": [
+        "Category",
+        "Data Source",
+        "Question",
+        "Answer"
+      ],
+      "rows": [
+        [
+          "New world",
+          "RealTimeQA (Kasai et al., 2023)",
+          "Which 2024 Republican presidential contender announced that he is ending his campaign?",
+          "Former Texas Rep. Will Hurd"
+        ],
+        [
+          "knowledge",
+          "FreshQA (Vu et al., 2023)",
+          "What is the latest highest-grossing movie of the week at the Box office?",
+          "Mean Girls"
+        ],
+        [
+          "",
+          "ToolQA (Zhuang et al., 2023)",
+          "What time did Grace attend Broadway Show on 2022/02/17?",
+          "8:00 PM"
+        ],
+        [
+          "Long-tail knowledge",
+          "PopQA (Mallen et al., 2023)",
+          "What is Henry Feilden’s occupation?",
+          "politician"
+        ],
+        [
+          "",
+          "TriviaQA (Joshi et al., 2017)",
+          "Which bird, that breeds in northern Europe in pine and beech forests, has a chestnut brown back, grey head, dark tail, buff breast and a striped black throat?",
+          "fieldfare"
+        ]
+      ],
+      "row_count": 5,
+      "col_count": 4,
+      "caption": "Table 11: Data examples of RetrievalQA (questions need external retrieval).",
+      "is_results_table": false,
+      "is_accepted": true,
+      "rejection_reason": null,
+      "classification": "other",
+      "normalized_records": [],
+      "normalization_reliable": false,
+      "normalization_note": "Rejected or non-results table",
+      "raw_table": {
+        "raw_headers": [
+          "Category",
+          "Data Source",
+          "Question",
+          "Answer"
+        ],
+        "raw_rows": [
+          [
+            "New world",
+            "RealTimeQA (Kasai et al., 2023)",
+            "Which 2024 Republican presidential contender announced that he is ending his campaign?",
+            "Former Texas Rep. Will Hurd"
+          ],
+          [
+            "knowledge",
+            "FreshQA (Vu et al., 2023)",
+            "What is the latest highest-grossing movie of the week at the Box office?",
+            "Mean Girls"
+          ],
+          [
+            "",
+            "ToolQA (Zhuang et al., 2023)",
+            "What time did Grace attend Broadway Show on 2022/02/17?",
+            "8:00 PM"
+          ],
+          [
+            "Long-tail knowledge",
+            "PopQA (Mallen et al., 2023)",
+            "What is Henry Feilden’s occupation?",
+            "politician"
+          ],
+          [
+            "",
+            "TriviaQA (Joshi et al., 2017)",
+            "Which bird, that breeds in northern Europe in pine and beech forests, has a chestnut brown back, grey head, dark tail, buff breast and a striped black throat?",
+            "fieldfare"
+          ]
+        ],
+        "bbox": [
+          83.24916076660156,
+          548.6705932617188,
+          512.0311889648438,
+          687.779052734375
+        ],
+        "caption": "Table 11: Data examples of RetrievalQA (questions need external retrieval)."
+      },
+      "paper_id": "46353944-90f2-435b-a40d-5822cec352e1"
+    }
+  }
+]
